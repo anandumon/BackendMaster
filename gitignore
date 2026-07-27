@@ -1,8 +1,0 @@
-# Note: Standard gitignore is located at .gitignore
-# Dependencies
-node_modules/
-dist/
-.output/
-.tanstack/
-.wrangler/
-.env

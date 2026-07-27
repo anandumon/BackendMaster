@@ -109,7 +109,9 @@ export function getQueue(): QueueItem[] {
 export function setQueue(list: QueueItem[]) {
   safeSet("regen-queue", list);
   if (isBrowser) {
-    window.dispatchEvent(new CustomEvent("backend_mastery:queue-updated", { detail: { count: list.length } }));
+    window.dispatchEvent(
+      new CustomEvent("backend_mastery:queue-updated", { detail: { count: list.length } }),
+    );
   }
 }
 
@@ -133,7 +135,10 @@ export function syncQueueItem(item: {
       status: item.status,
       error: item.error,
       completedAt: item.status === "done" ? now : list[idx].completedAt,
-      duration: item.status === "done" && list[idx].startedAt ? now - list[idx].startedAt! : list[idx].duration,
+      duration:
+        item.status === "done" && list[idx].startedAt
+          ? now - list[idx].startedAt!
+          : list[idx].duration,
       currentStep: undefined,
     };
   } else {
@@ -168,7 +173,11 @@ export function setVoiceReaderPosition(slug: string, chunkIndex: number) {
 }
 export function clearVoiceReaderPosition(slug: string) {
   if (!isBrowser) return;
-  try { localStorage.removeItem(`voice-position:${slug}`); } catch {}
+  try {
+    localStorage.removeItem(`voice-position:${slug}`);
+  } catch {
+    /* ignore */
+  }
 }
 
 // Progress

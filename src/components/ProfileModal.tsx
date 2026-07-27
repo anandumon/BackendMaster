@@ -3,13 +3,7 @@ import { useAuth } from "@/lib/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Shield, Check, Loader2, X } from "lucide-react";
 
-export function ProfileModal({
-  isOpen,
-  onClose,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-}) {
+export function ProfileModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const auth = useAuth();
   const [displayName, setDisplayName] = useState("");
   const [saving, setSaving] = useState(false);
@@ -29,12 +23,16 @@ export function ProfileModal({
           if (data?.display_name) {
             setDisplayName(data.display_name);
           } else {
-            setDisplayName(auth.user?.user_metadata?.display_name || auth.user?.email?.split("@")[0] || "");
+            setDisplayName(
+              auth.user?.user_metadata?.display_name || auth.user?.email?.split("@")[0] || "",
+            );
           }
         },
         () => {
-          setDisplayName(auth.user?.user_metadata?.display_name || auth.user?.email?.split("@")[0] || "");
-        }
+          setDisplayName(
+            auth.user?.user_metadata?.display_name || auth.user?.email?.split("@")[0] || "",
+          );
+        },
       );
   }, [auth.user, isOpen]);
 
@@ -55,14 +53,12 @@ export function ProfileModal({
 
       // 2. Try updating Supabase profiles table
       try {
-        await supabase
-          .from("profiles")
-          .upsert({
-            id: auth.user.id,
-            email: auth.user.email,
-            display_name: displayName.trim(),
-            updated_at: new Date().toISOString(),
-          });
+        await supabase.from("profiles").upsert({
+          id: auth.user.id,
+          email: auth.user.email,
+          display_name: displayName.trim(),
+          updated_at: new Date().toISOString(),
+        });
       } catch {
         // Fallback if RLS or schema policy is pending
       }
@@ -72,7 +68,6 @@ export function ProfileModal({
         setSuccess(false);
         onClose();
       }, 1200);
-
     } catch (err) {
       setError((err as Error).message || "Failed to update profile.");
     } finally {
@@ -131,7 +126,9 @@ export function ProfileModal({
             <span className="text-muted-foreground flex items-center gap-1.5">
               <Shield className="h-3.5 w-3.5 text-primary" /> Role Status:
             </span>
-            <span className={`font-semibold px-2 py-0.5 rounded-full ${auth.isAdmin ? "bg-amber-500/10 text-amber-600" : "bg-primary/10 text-primary"}`}>
+            <span
+              className={`font-semibold px-2 py-0.5 rounded-full ${auth.isAdmin ? "bg-amber-500/10 text-amber-600" : "bg-primary/10 text-primary"}`}
+            >
               {auth.isAdmin ? "👑 Admin" : "👤 User"}
             </span>
           </div>
@@ -161,7 +158,11 @@ export function ProfileModal({
               disabled={saving}
               className="px-4 py-2 text-sm rounded-xl bg-primary text-primary-foreground font-medium hover:opacity-95 disabled:opacity-50 inline-flex items-center gap-1.5"
             >
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+              {saving ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Check className="h-4 w-4" />
+              )}
               Save Changes
             </button>
           </div>

@@ -11,7 +11,8 @@ export type QueueFilter = {
 
 export function filterQueue(items: QueueItem[], filter: QueueFilter): QueueItem[] {
   return items.filter((it) => {
-    if (filter.step && it.failedStep !== filter.step && it.currentStep !== filter.step) return false;
+    if (filter.step && it.failedStep !== filter.step && it.currentStep !== filter.step)
+      return false;
     if (filter.httpStatus && it.httpStatus !== filter.httpStatus) return false;
     if (filter.statusFilter && it.status !== filter.statusFilter) return false;
     if (filter.pdfId && it.pdfId !== filter.pdfId) return false;
@@ -81,10 +82,7 @@ export function exportCSV(items: QueueItem[], filename: string) {
     const s = String(v ?? "").replace(/"/g, '""');
     return s.includes(",") || s.includes('"') || s.includes("\n") ? `"${s}"` : s;
   };
-  const lines = [
-    headers.join(","),
-    ...rows.map((r) => headers.map((h) => escape(r[h])).join(",")),
-  ];
+  const lines = [headers.join(","), ...rows.map((r) => headers.map((h) => escape(r[h])).join(","))];
   const blob = new Blob([lines.join("\n")], { type: "text/csv" });
   downloadBlob(blob, `${filename}.csv`);
 }
@@ -96,5 +94,8 @@ function downloadBlob(blob: Blob, name: string) {
   a.download = name;
   document.body.appendChild(a);
   a.click();
-  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 100);
 }

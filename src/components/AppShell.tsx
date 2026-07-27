@@ -108,14 +108,20 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <nav className="px-3 py-3 space-y-1 text-sm shrink-0">
           <NavItem to="/" icon={<LayoutDashboard className="h-4 w-4" />} label="Dashboard" />
-          <NavItem to="/offline" icon={<CloudDownload className="h-4 w-4" />} label="Offline library" />
+          <NavItem
+            to="/offline"
+            icon={<CloudDownload className="h-4 w-4" />}
+            label="Offline library"
+          />
           {auth.isAdmin && (
             <NavItem to="/admin" icon={<Shield className="h-4 w-4" />} label="Admin" />
           )}
         </nav>
 
         <div className="px-4 mt-1 mb-3 shrink-0">
-          <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Progress</div>
+          <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+            Progress
+          </div>
           <div className="h-2 bg-muted rounded-full overflow-hidden">
             <div
               className="h-full rounded-full transition-all"
@@ -150,7 +156,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                           : "hover:bg-sidebar-accent text-sidebar-foreground/90"
                       }`}
                     >
-                      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: domain.color || "var(--primary)" }} />
+                      <span
+                        className="w-1.5 h-1.5 rounded-full shrink-0"
+                        style={{ background: domain.color || "var(--primary)" }}
+                      />
                       <span className="truncate flex-1">{topic.title}</span>
                     </Link>
                     <button
@@ -202,7 +211,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                 title="Profile settings"
               >
                 <User className="h-3.5 w-3.5 text-primary shrink-0" />
-                <span className="truncate">{auth.user?.user_metadata?.display_name || auth.user?.email}</span>
+                <span className="truncate">
+                  {auth.user?.user_metadata?.display_name || auth.user?.email}
+                </span>
               </button>
               <button
                 onClick={() => auth.signOut()}
@@ -274,7 +285,12 @@ export function AppShell({ children }: { children: ReactNode }) {
                       params={{ slug: topic.slug }}
                       className="inline-flex items-center gap-1 hover:opacity-90"
                     >
-                      <span className="w-1.5 h-1.5 rounded-full" style={{ background: active ? "#ffffff" : (domain.color || "var(--primary)") }} />
+                      <span
+                        className="w-1.5 h-1.5 rounded-full"
+                        style={{
+                          background: active ? "#ffffff" : domain.color || "var(--primary)",
+                        }}
+                      />
                       <span className="truncate max-w-[150px]">{topic.title}</span>
                     </Link>
                     <button
@@ -317,7 +333,9 @@ function NavItem({ to, icon, label }: { to: string; icon: ReactNode; label: stri
     <Link
       to={to}
       className={`flex items-center gap-2 rounded-md px-3 py-2 ${
-        active ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : "hover:bg-sidebar-accent/60"
+        active
+          ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+          : "hover:bg-sidebar-accent/60"
       }`}
     >
       {icon}

@@ -157,9 +157,12 @@ export const Route = createFileRoute("/api/lesson")({
           }
         }
 
-        return new Response(lastErrorText || "All AI models unavailable. Please try again shortly.", {
-          status: lastStatus || 500,
-        });
+        return new Response(
+          lastErrorText || "All AI models unavailable. Please try again shortly.",
+          {
+            status: lastStatus || 500,
+          },
+        );
       },
     },
   },

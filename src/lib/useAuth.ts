@@ -60,7 +60,8 @@ export function useAuth(): AuthState & {
       const isAdmin = data.session ? await refreshRole(data.session.user) : false;
       if (!mounted) return;
       if (data.session?.user) {
-        const name = data.session.user.user_metadata?.display_name || data.session.user.email?.split("@")[0];
+        const name =
+          data.session.user.user_metadata?.display_name || data.session.user.email?.split("@")[0];
         if (name) setCachedUserDisplayName(name);
       }
       setState({

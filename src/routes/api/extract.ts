@@ -11,7 +11,10 @@ type Body = {
 
 const SYSTEM = `You are a curriculum extraction engine. You receive a PDF containing a developer roadmap (from roadmap.sh or similar). Extract EVERY node, subtopic, keyword and hierarchy from the PDF into a strict JSON topic tree. Never merge or summarize distinct nodes. If the roadmap has 300 leaves, return 300 topics.`;
 
-const USER_INSTRUCTIONS = (name: string, hint?: string) => `Analyze the attached PDF "${name}" (a roadmap). Extract the full hierarchy as JSON with this exact schema:
+const USER_INSTRUCTIONS = (
+  name: string,
+  hint?: string,
+) => `Analyze the attached PDF "${name}" (a roadmap). Extract the full hierarchy as JSON with this exact schema:
 
 {
   "domainSlug": "kebab-case slug for the whole roadmap, e.g. 'java'",

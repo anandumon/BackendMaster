@@ -24,7 +24,11 @@ export const Route = createFileRoute("/domain/$slug")({
 });
 
 function DomainPage() {
-  return <RequireAuth><DomainContent /></RequireAuth>;
+  return (
+    <RequireAuth>
+      <DomainContent />
+    </RequireAuth>
+  );
 }
 
 function DomainContent() {
@@ -48,20 +52,25 @@ function DomainContent() {
     .filter((t) => completed.includes(t.slug)).length;
   const pct = totalTopics ? Math.round((doneCount / totalTopics) * 100) : 0;
 
-  const isCurrentDomainGenerating = genState.activeRoadmapSlug === domain.slug && genState.status === "generating";
+  const isCurrentDomainGenerating =
+    genState.activeRoadmapSlug === domain.slug && genState.status === "generating";
 
   return (
     <AppShell>
       <div className="max-w-5xl mx-auto px-5 lg:px-10 py-8 lg:py-12">
         <nav className="text-xs text-muted-foreground mb-4 flex items-center gap-1">
-          <Link to="/" className="hover:text-foreground">Home</Link>
+          <Link to="/" className="hover:text-foreground">
+            Home
+          </Link>
           <ChevronRight className="h-3 w-3" />
           <span>{domain.title}</span>
         </nav>
 
         <div
           className="rounded-3xl p-6 lg:p-8 mb-8 text-white relative overflow-hidden"
-          style={{ background: `linear-gradient(135deg, ${domain.color || 'oklch(0.6 0.2 250)'}, oklch(0.5 0.2 280))` }}
+          style={{
+            background: `linear-gradient(135deg, ${domain.color || "oklch(0.6 0.2 250)"}, oklch(0.5 0.2 280))`,
+          }}
         >
           <div className="text-4xl">{domain.icon}</div>
           <h1 className="mt-2 text-3xl lg:text-4xl font-bold">{domain.title} Roadmap</h1>
@@ -71,7 +80,8 @@ function DomainContent() {
             <span className="bg-white/20 px-3 py-1 rounded-full">{pct}% complete</span>
             {isCurrentDomainGenerating && (
               <span className="bg-white/30 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 animate-pulse">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Generating topics... (~{genState.estimatedSecondsRemaining}s left)
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Generating topics... (~
+                {genState.estimatedSecondsRemaining}s left)
               </span>
             )}
           </div>
@@ -87,10 +97,15 @@ function DomainContent() {
               <span>{genState.progress.percent}% overall</span>
             </div>
             <div className="h-2 rounded-full bg-muted overflow-hidden">
-              <div className="h-full bg-primary rounded-full transition-all duration-300" style={{ width: `${genState.progress.percent}%` }} />
+              <div
+                className="h-full bg-primary rounded-full transition-all duration-300"
+                style={{ width: `${genState.progress.percent}%` }}
+              />
             </div>
             <div className="text-xs text-muted-foreground">
-              Currently generating: <strong className="text-foreground">{genState.currentTopicTitle}</strong> ({genState.currentSectionTitle})
+              Currently generating:{" "}
+              <strong className="text-foreground">{genState.currentTopicTitle}</strong> (
+              {genState.currentSectionTitle})
             </div>
           </div>
         )}
@@ -151,7 +166,9 @@ function DomainContent() {
                             </span>
                           )}
                         </div>
-                        <div className="text-xs text-muted-foreground line-clamp-1">{topic.summary}</div>
+                        <div className="text-xs text-muted-foreground line-clamp-1">
+                          {topic.summary}
+                        </div>
                       </div>
                     </Link>
                   );

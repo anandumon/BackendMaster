@@ -99,9 +99,7 @@ export function deletePdf(id: string) {
   const pdf = getPdfs().find((p) => p.id === id);
   setPdfs(getPdfs().filter((p) => p.id !== id));
   if (pdf?.domainSlugs?.length) {
-    setExtractedDomains(
-      getExtractedDomains().filter((d) => !pdf.domainSlugs!.includes(d.slug)),
-    );
+    setExtractedDomains(getExtractedDomains().filter((d) => !pdf.domainSlugs!.includes(d.slug)));
   }
 }
 
@@ -215,31 +213,24 @@ export function findAdjacentMerged(slug: string) {
 export function checkCompleteness(pdf: UploadedPdf): CompletenessReport | null {
   if (pdf.status !== "done" || !pdf.domainSlugs?.length || !pdf.quality) return null;
 
-  const domains = getExtractedDomains().filter((d) =>
-    pdf.domainSlugs!.includes(d.slug),
-  );
+  const domains = getExtractedDomains().filter((d) => pdf.domainSlugs!.includes(d.slug));
   if (domains.length === 0) return null;
 
   const domain = domains[0];
-  const actualNodeCount = domain.sections.reduce(
-    (sum, sec) => sum + sec.topics.length,
-    0,
-  );
+  const actualNodeCount = domain.sections.reduce((sum, sec) => sum + sec.topics.length, 0);
   const expectedNodeCount = pdf.quality.expectedNodeCount || actualNodeCount;
 
   // Find missing nodes from skipped list
-  const missingNodes: CompletenessReport["missingNodes"] = (
-    pdf.quality.skippedNodes || []
-  ).map((sn) => ({
-    title: sn.title,
-    section: "Unknown",
-    reason: sn.reason,
-  }));
+  const missingNodes: CompletenessReport["missingNodes"] = (pdf.quality.skippedNodes || []).map(
+    (sn) => ({
+      title: sn.title,
+      section: "Unknown",
+      reason: sn.reason,
+    }),
+  );
 
   const coveragePercent =
-    expectedNodeCount > 0
-      ? Math.round((actualNodeCount / expectedNodeCount) * 100)
-      : 100;
+    expectedNodeCount > 0 ? Math.round((actualNodeCount / expectedNodeCount) * 100) : 100;
 
   let status: CompletenessReport["status"];
   if (coveragePercent >= 95) status = "complete";

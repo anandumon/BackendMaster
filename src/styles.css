@@ -159,10 +159,25 @@
     margin-top: 1.5rem;
     margin-bottom: 0.75rem;
   }
-  .prose-lesson h3 { font-size: 1.15rem; font-weight: 600; margin-top: 1rem; margin-bottom: 0.5rem; }
-  .prose-lesson p { margin-bottom: 0.75rem; line-height: 1.7; }
-  .prose-lesson ul, .prose-lesson ol { margin-left: 1.25rem; margin-bottom: 0.75rem; }
-  .prose-lesson li { margin-bottom: 0.25rem; line-height: 1.6; }
+  .prose-lesson h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  .prose-lesson p {
+    margin-bottom: 0.75rem;
+    line-height: 1.7;
+  }
+  .prose-lesson ul,
+  .prose-lesson ol {
+    margin-left: 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+  .prose-lesson li {
+    margin-bottom: 0.25rem;
+    line-height: 1.6;
+  }
   .prose-lesson code {
     background: var(--muted);
     padding: 0.1rem 0.35rem;
@@ -176,9 +191,18 @@
     overflow-x: auto;
     margin-bottom: 0.75rem;
   }
-  .prose-lesson pre code { background: transparent; padding: 0; }
-  .prose-lesson strong { color: var(--foreground); font-weight: 600; }
-  .prose-lesson a { color: var(--primary); text-decoration: underline; }
+  .prose-lesson pre code {
+    background: transparent;
+    padding: 0;
+  }
+  .prose-lesson strong {
+    color: var(--foreground);
+    font-weight: 600;
+  }
+  .prose-lesson a {
+    color: var(--primary);
+    text-decoration: underline;
+  }
   .prose-lesson blockquote {
     border-left: 3px solid var(--primary);
     padding-left: 1rem;

@@ -47,7 +47,10 @@ export function AiTeacher({ topicTitle }: { topicTitle?: string }) {
       });
       if (!res.ok) {
         const err = await res.text();
-        setMessages([...next, { role: "assistant", content: `⚠️ ${err.slice(0, 200) || "Request failed"}` }]);
+        setMessages([
+          ...next,
+          { role: "assistant", content: `⚠️ ${err.slice(0, 200) || "Request failed"}` },
+        ]);
       } else {
         const data = (await res.json()) as { content: string };
         setMessages([...next, { role: "assistant", content: data.content }]);
@@ -81,7 +84,10 @@ export function AiTeacher({ topicTitle }: { topicTitle?: string }) {
       {open && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-end p-0 sm:p-4 bg-black/40 backdrop-blur-sm">
           <div className="w-full sm:w-[440px] h-[85vh] sm:h-[600px] bg-card border border-border rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3" style={{ background: "var(--gradient-primary)" }}>
+            <div
+              className="flex items-center justify-between px-4 py-3"
+              style={{ background: "var(--gradient-primary)" }}
+            >
               <div className="flex items-center gap-2 text-white">
                 <Sparkles className="h-4 w-4" />
                 <div>
@@ -97,7 +103,9 @@ export function AiTeacher({ topicTitle }: { topicTitle?: string }) {
               {messages.length === 0 && (
                 <div className="space-y-3">
                   <p className="text-sm text-muted-foreground">
-                    Ask anything about {topicTitle ? <strong>{topicTitle}</strong> : "backend development"}. I can explain differently, compare topics, and generate examples or quizzes.
+                    Ask anything about{" "}
+                    {topicTitle ? <strong>{topicTitle}</strong> : "backend development"}. I can
+                    explain differently, compare topics, and generate examples or quizzes.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {quickPrompts.map((p) => (
@@ -118,7 +126,9 @@ export function AiTeacher({ topicTitle }: { topicTitle?: string }) {
                     className={`max-w-[90%] rounded-2xl px-3 py-2 text-sm ${
                       m.role === "user" ? "text-white" : "bg-muted text-foreground"
                     }`}
-                    style={m.role === "user" ? { background: "var(--gradient-primary)" } : undefined}
+                    style={
+                      m.role === "user" ? { background: "var(--gradient-primary)" } : undefined
+                    }
                   >
                     {m.role === "assistant" ? <Markdown>{m.content}</Markdown> : m.content}
                   </div>

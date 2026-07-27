@@ -4,15 +4,31 @@ import { AppShell } from "@/components/AppShell";
 import { RequireAuth } from "@/components/RequireAuth";
 import { useAuth } from "@/lib/useAuth";
 import { useEffect, useState } from "react";
-import { getCompletions, getBookmarksDB, getRecentActivity, getPinnedDB, unpinLessonDB } from "@/lib/lesson-db";
+import {
+  getCompletions,
+  getBookmarksDB,
+  getRecentActivity,
+  getPinnedDB,
+  unpinLessonDB,
+} from "@/lib/lesson-db";
 import { useGenerationState } from "@/lib/generation-state";
 import { useAllDomains, allTopicsMerged, findLessonMerged } from "@/lib/curriculum-extra";
 import { getPinnedLessons, getCachedUserDisplayName } from "@/lib/storage";
-import { Sparkles, ArrowRight, BookOpen, Target, Flame, Activity, Clock, Loader2, Pin, Layers, X } from "lucide-react";
+import {
+  Sparkles,
+  ArrowRight,
+  BookOpen,
+  Target,
+  Flame,
+  Activity,
+  Clock,
+  Loader2,
+  Pin,
+  Layers,
+  X,
+} from "lucide-react";
 
-export const Route = createFileRoute("/")(
-  { component: Dashboard },
-);
+export const Route = createFileRoute("/")({ component: Dashboard });
 
 function Dashboard() {
   return (
@@ -29,7 +45,9 @@ function DashboardContent() {
   const [completed, setCompleted] = useState<string[]>([]);
   const [bookmarks, setBookmarks] = useState<string[]>([]);
   const [pinnedSlugs, setPinnedSlugs] = useState<string[]>([]);
-  const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [recentActivity, setRecentActivity] = useState<
+    Array<{ id?: string; action: string; slug?: string | null; created_at: string }>
+  >([]);
 
   const rawName = auth.user?.user_metadata?.display_name || auth.user?.email?.split("@")[0];
   const userName = rawName || getCachedUserDisplayName() || "learner";
@@ -99,7 +117,10 @@ function DashboardContent() {
           className="rounded-3xl p-8 lg:p-12 text-white relative overflow-hidden"
           style={{ background: "var(--gradient-hero)", boxShadow: "var(--shadow-elegant)" }}
         >
-          <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full opacity-30 blur-3xl" style={{ background: "var(--primary-glow)" }} />
+          <div
+            className="absolute -top-24 -right-24 h-64 w-64 rounded-full opacity-30 blur-3xl"
+            style={{ background: "var(--primary-glow)" }}
+          />
           <div className="relative">
             <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest bg-white/10 border border-white/20 backdrop-blur-md px-3 py-1 rounded-full opacity-95 mb-4 shadow-sm">
               <Sparkles className="h-3.5 w-3.5 text-amber-300 animate-pulse" />
@@ -111,7 +132,8 @@ function DashboardContent() {
               <span className="animated-heading-text">!</span>
             </h1>
             <p className="mt-4 text-white/90 max-w-2xl text-base lg:text-lg leading-relaxed font-normal">
-              Learn at your own pace with structured roadmaps, detailed theory, practical examples, coding challenges, project-based learning, and personalized progress tracking.
+              Learn at your own pace with structured roadmaps, detailed theory, practical examples,
+              coding challenges, project-based learning, and personalized progress tracking.
             </p>
             {nextUp && (
               <Link
@@ -134,7 +156,9 @@ function DashboardContent() {
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Active Roadmap Generation: {genState.activeRoadmapTitle}
               </div>
-              <span className="text-xs font-semibold text-primary">{genState.progress.percent}%</span>
+              <span className="text-xs font-semibold text-primary">
+                {genState.progress.percent}%
+              </span>
             </div>
 
             <div className="space-y-1">
@@ -150,7 +174,8 @@ function DashboardContent() {
                   <strong className="text-foreground">{genState.currentTopicTitle}</strong>
                 </span>
                 <span className="flex items-center gap-1">
-                  <Clock className="h-3 w-3 text-primary" /> Est. remaining: ~{genState.estimatedSecondsRemaining}s
+                  <Clock className="h-3 w-3 text-primary" /> Est. remaining: ~
+                  {genState.estimatedSecondsRemaining}s
                 </span>
               </div>
             </div>
@@ -159,10 +184,26 @@ function DashboardContent() {
 
         {/* 3. Stats Grid */}
         <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard icon={<BookOpen className="h-4 w-4 text-blue-500" />} label="Total lessons" value={total.toString()} />
-          <StatCard icon={<Target className="h-4 w-4 text-amber-500" />} label="Progress" value={`${progressPct}%`} />
-          <StatCard icon={<Flame className="h-4 w-4 text-emerald-500" />} label="Completed" value={completed.length.toString()} />
-          <StatCard icon={<Sparkles className="h-4 w-4 text-purple-500" />} label="Bookmarks" value={bookmarks.length.toString()} />
+          <StatCard
+            icon={<BookOpen className="h-4 w-4 text-blue-500" />}
+            label="Total lessons"
+            value={total.toString()}
+          />
+          <StatCard
+            icon={<Target className="h-4 w-4 text-amber-500" />}
+            label="Progress"
+            value={`${progressPct}%`}
+          />
+          <StatCard
+            icon={<Flame className="h-4 w-4 text-emerald-500" />}
+            label="Completed"
+            value={completed.length.toString()}
+          />
+          <StatCard
+            icon={<Sparkles className="h-4 w-4 text-purple-500" />}
+            label="Bookmarks"
+            value={bookmarks.length.toString()}
+          />
         </section>
 
         {/* 4. Learning Roadmaps (Infinite Moving Right-to-Left Loop Card Marquee) */}
@@ -198,7 +239,9 @@ function DashboardContent() {
                   >
                     <div
                       className="relative h-36 sm:h-40 rounded-2xl overflow-hidden shadow-md group-hover:shadow-2xl group-hover:shadow-primary/25 transition-all duration-500 group-hover:-translate-y-2 p-5 flex flex-col justify-between text-white border border-white/15"
-                      style={{ background: `linear-gradient(135deg, ${d.color || 'oklch(0.6 0.2 250)'}, color-mix(in oklab, ${d.color || 'oklch(0.6 0.2 250)'} 40%, black))` }}
+                      style={{
+                        background: `linear-gradient(135deg, ${d.color || "oklch(0.6 0.2 250)"}, color-mix(in oklab, ${d.color || "oklch(0.6 0.2 250)"} 40%, black))`,
+                      }}
                     >
                       {/* Shimmer Light Reflection Sweep Animation */}
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out pointer-events-none" />
@@ -263,7 +306,10 @@ function DashboardContent() {
                   >
                     <div>
                       <div className="flex items-center justify-between text-[10px] font-semibold text-muted-foreground mb-1">
-                        <span className="px-2 py-0.5 rounded-full text-white" style={{ background: domain.color }}>
+                        <span
+                          className="px-2 py-0.5 rounded-full text-white"
+                          style={{ background: domain.color }}
+                        >
                           {domain.title}
                         </span>
                         <div className="flex items-center gap-1.5">
@@ -286,9 +332,7 @@ function DashboardContent() {
                         params={{ slug: topic.slug }}
                         className="block group-hover:text-primary transition-colors"
                       >
-                        <h3 className="font-semibold text-sm line-clamp-1">
-                          {topic.title}
-                        </h3>
+                        <h3 className="font-semibold text-sm line-clamp-1">{topic.title}</h3>
                         <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
                           {section.title}
                         </p>
@@ -323,7 +367,9 @@ function DashboardContent() {
                   <ActivityIcon action={a.action} />
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium truncate">{a.slug || a.action}</div>
-                    <div className="text-xs text-muted-foreground">{a.action.replace(/_/g, " ")}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {a.action.replace(/_/g, " ")}
+                    </div>
                   </div>
                   <div className="text-[10px] text-muted-foreground flex items-center gap-1">
                     <Clock className="h-3 w-3" />

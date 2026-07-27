@@ -81,7 +81,9 @@ function PdfsPage() {
   useEffect(() => setPdfs(getPdfs()), []);
 
   async function handleFiles(files: FileList | File[]) {
-    const arr = Array.from(files).filter((f) => f.type === "application/pdf" || f.name.toLowerCase().endsWith(".pdf"));
+    const arr = Array.from(files).filter(
+      (f) => f.type === "application/pdf" || f.name.toLowerCase().endsWith(".pdf"),
+    );
     for (const file of arr) {
       await parseOne(file, hint);
       setPdfs(getPdfs());
@@ -141,7 +143,7 @@ function PdfsPage() {
               ? "Rate limit — wait and retry."
               : res.status === 402
                 ? "AI credits exhausted."
-                : (text.slice(0, 250) || "Extraction failed."),
+                : text.slice(0, 250) || "Extraction failed.",
         });
         return;
       }
@@ -185,9 +187,10 @@ function PdfsPage() {
       // Compute branching stats
       const branchCounts = domain.sections.map((s) => s.topics.length);
       const maxBranching = Math.max(...branchCounts, 0);
-      const avgBranching = branchCounts.length > 0
-        ? Math.round((branchCounts.reduce((a, b) => a + b, 0) / branchCounts.length) * 10) / 10
-        : 0;
+      const avgBranching =
+        branchCounts.length > 0
+          ? Math.round((branchCounts.reduce((a, b) => a + b, 0) / branchCounts.length) * 10) / 10
+          : 0;
 
       upsertPdf({
         ...rec,
@@ -236,7 +239,9 @@ function PdfsPage() {
       }
     }
     setQueue(q);
-    alert(`Queued ${added} topics from "${pdf.name}" for lesson regeneration. Open the Regen queue tab to run.`);
+    alert(
+      `Queued ${added} topics from "${pdf.name}" for lesson regeneration. Open the Regen queue tab to run.`,
+    );
   }
 
   return (
@@ -259,7 +264,8 @@ function PdfsPage() {
         <Upload className="h-8 w-8 mx-auto text-primary" />
         <h2 className="mt-3 font-semibold">Upload a roadmap PDF</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Drop a PDF here or click below. The AI extractor will pull every node, subtopic, and keyword into a new roadmap.
+          Drop a PDF here or click below. The AI extractor will pull every node, subtopic, and
+          keyword into a new roadmap.
         </p>
         <input
           ref={inputRef}
@@ -283,7 +289,9 @@ function PdfsPage() {
             Choose PDF
           </button>
         </div>
-        <div className="mt-3 text-xs text-muted-foreground">Max 18 MB per file · PDFs are parsed by AI multimodal extraction.</div>
+        <div className="mt-3 text-xs text-muted-foreground">
+          Max 18 MB per file · PDFs are parsed by AI multimodal extraction.
+        </div>
       </div>
 
       <div className="rounded-2xl border border-border bg-card">
@@ -345,7 +353,8 @@ function PdfRow({
           {pdf.quality && (
             <div className="mt-1 text-xs text-muted-foreground">
               {pdf.quality.sections} sections · {pdf.quality.topics} topics
-              {" · depth "}{pdf.quality.hierarchyDepth}
+              {" · depth "}
+              {pdf.quality.hierarchyDepth}
               {pdf.quality.warnings.length > 0 && (
                 <span className="ml-2 text-amber-600 dark:text-amber-400 inline-flex items-center gap-1">
                   <AlertTriangle className="h-3 w-3" />
@@ -360,9 +369,7 @@ function PdfRow({
               )}
             </div>
           )}
-          {pdf.error && (
-            <div className="mt-1 text-xs text-destructive">{pdf.error}</div>
-          )}
+          {pdf.error && <div className="mt-1 text-xs text-destructive">{pdf.error}</div>}
 
           {/* Expand/collapse parsing report */}
           {pdf.status === "done" && pdf.quality && (
@@ -370,12 +377,18 @@ function PdfRow({
               onClick={() => setExpanded(!expanded)}
               className="mt-2 text-xs text-primary inline-flex items-center gap-1 hover:underline"
             >
-              {expanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+              {expanded ? (
+                <ChevronDown className="h-3 w-3" />
+              ) : (
+                <ChevronRight className="h-3 w-3" />
+              )}
               <BarChart3 className="h-3 w-3" />
               Parsing Report
             </button>
           )}
-          {expanded && pdf.quality && <ParsingReport quality={pdf.quality} report={report} parseNotes={pdf.parseNotes} />}
+          {expanded && pdf.quality && (
+            <ParsingReport quality={pdf.quality} report={report} parseNotes={pdf.parseNotes} />
+          )}
         </div>
         <div className="flex items-center gap-1 shrink-0">
           {pdf.status === "done" && (
@@ -459,7 +472,8 @@ function ParsingReport({
           {report.missingNodes.length > 0 && (
             <details className="mt-2">
               <summary className="text-xs text-amber-600 dark:text-amber-400 cursor-pointer">
-                {report.missingNodes.length} missing/skipped node{report.missingNodes.length === 1 ? "" : "s"}
+                {report.missingNodes.length} missing/skipped node
+                {report.missingNodes.length === 1 ? "" : "s"}
               </summary>
               <ul className="mt-1 space-y-0.5">
                 {report.missingNodes.map((mn, i) => (
@@ -487,7 +501,9 @@ function ParsingReport({
               <div key={tc.slug} className="flex items-center gap-2 text-xs">
                 <ConfidenceDot confidence={tc.confidence} />
                 <span className="truncate flex-1">{tc.title}</span>
-                <span className="tabular-nums text-muted-foreground">{(tc.confidence * 100).toFixed(0)}%</span>
+                <span className="tabular-nums text-muted-foreground">
+                  {(tc.confidence * 100).toFixed(0)}%
+                </span>
               </div>
             ))}
           </div>
@@ -504,7 +520,8 @@ function ParsingReport({
             {quality.skippedNodes.map((sn, i) => (
               <li key={i} className="text-xs text-muted-foreground">
                 <span className="text-foreground font-medium">{sn.title}</span>
-                {" — "}{sn.reason}
+                {" — "}
+                {sn.reason}
               </li>
             ))}
           </ul>
@@ -518,7 +535,9 @@ function ParsingReport({
             ⚠️ Warnings ({quality.warnings.length})
           </summary>
           <ul className="mt-1 list-disc pl-4 text-xs text-amber-700 dark:text-amber-400">
-            {quality.warnings.map((w, i) => <li key={i}>{w}</li>)}
+            {quality.warnings.map((w, i) => (
+              <li key={i}>{w}</li>
+            ))}
           </ul>
         </details>
       )}
@@ -557,13 +576,27 @@ function ConfidenceDot({ confidence }: { confidence: number }) {
 
 function CompletenessBadge({ report }: { report: CompletenessReport }) {
   const map = {
-    complete: { cls: "bg-green-500/10 text-green-700 dark:text-green-400", icon: <ShieldCheck className="h-3 w-3" />, label: `${report.coveragePercent}% complete` },
-    partial: { cls: "bg-amber-500/10 text-amber-700 dark:text-amber-400", icon: <ShieldAlert className="h-3 w-3" />, label: `${report.coveragePercent}% coverage` },
-    incomplete: { cls: "bg-red-500/10 text-red-700 dark:text-red-400", icon: <ShieldX className="h-3 w-3" />, label: `${report.coveragePercent}% coverage` },
+    complete: {
+      cls: "bg-green-500/10 text-green-700 dark:text-green-400",
+      icon: <ShieldCheck className="h-3 w-3" />,
+      label: `${report.coveragePercent}% complete`,
+    },
+    partial: {
+      cls: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
+      icon: <ShieldAlert className="h-3 w-3" />,
+      label: `${report.coveragePercent}% coverage`,
+    },
+    incomplete: {
+      cls: "bg-red-500/10 text-red-700 dark:text-red-400",
+      icon: <ShieldX className="h-3 w-3" />,
+      label: `${report.coveragePercent}% coverage`,
+    },
   };
   const s = map[report.status];
   return (
-    <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full ${s.cls}`}>
+    <span
+      className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full ${s.cls}`}
+    >
       {s.icon}
       {s.label}
     </span>
@@ -573,13 +606,27 @@ function CompletenessBadge({ report }: { report: CompletenessReport }) {
 function StatusPill({ status }: { status: UploadedPdf["status"] }) {
   const map = {
     pending: { label: "Pending", cls: "bg-muted text-muted-foreground", icon: null },
-    parsing: { label: "Parsing", cls: "bg-primary/10 text-primary", icon: <Loader2 className="h-3 w-3 animate-spin" /> },
-    done: { label: "Parsed", cls: "bg-green-500/10 text-green-700 dark:text-green-400", icon: <CheckCircle2 className="h-3 w-3" /> },
-    error: { label: "Failed", cls: "bg-destructive/10 text-destructive", icon: <AlertTriangle className="h-3 w-3" /> },
+    parsing: {
+      label: "Parsing",
+      cls: "bg-primary/10 text-primary",
+      icon: <Loader2 className="h-3 w-3 animate-spin" />,
+    },
+    done: {
+      label: "Parsed",
+      cls: "bg-green-500/10 text-green-700 dark:text-green-400",
+      icon: <CheckCircle2 className="h-3 w-3" />,
+    },
+    error: {
+      label: "Failed",
+      cls: "bg-destructive/10 text-destructive",
+      icon: <AlertTriangle className="h-3 w-3" />,
+    },
   } as const;
   const s = map[status];
   return (
-    <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full ${s.cls}`}>
+    <span
+      className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full ${s.cls}`}
+    >
       {s.icon}
       {s.label}
     </span>

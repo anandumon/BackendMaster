@@ -11,13 +11,17 @@ export function LessonContentSkeleton({
     <div className="space-y-6">
       {/* Top Banner Card */}
       <div className="rounded-2xl border border-primary/30 bg-card p-6 lg:p-8 text-center relative overflow-hidden shadow-sm">
-        <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-white text-sm font-semibold shadow-md animate-pulse" style={{ background: "var(--gradient-primary)" }}>
+        <div
+          className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-white text-sm font-semibold shadow-md animate-pulse"
+          style={{ background: "var(--gradient-primary)" }}
+        >
           <Sparkles className="h-4 w-4 animate-spin" />
           {topicTitle ? `Generating: ${topicTitle}...` : "Generating your lesson..."}
         </div>
 
         <p className="text-sm text-muted-foreground mt-4 max-w-xl mx-auto leading-relaxed">
-          Building overview, theory, code examples, MCQs, and flashcards. This takes ~10–20s the first time. Once generated, all users can view it instantly.
+          Building overview, theory, code examples, MCQs, and flashcards. This takes ~10–20s the
+          first time. Once generated, all users can view it instantly.
         </p>
 
         {estimatedSeconds && estimatedSeconds > 0 && (

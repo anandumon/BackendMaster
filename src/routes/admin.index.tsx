@@ -71,28 +71,56 @@ function AdminOverview() {
 
   useEffect(() => {
     const syncAll = () => {
-      try { setPdfs(getPdfs()); } catch {}
-      try { setExtractedDomains(getExtractedDomains().length); } catch {}
-      try { setQueueState(getQueue()); } catch {}
-      try { setTotal(allTopicsMerged().length); } catch {}
-      try { setReports(getAllCompletenessReports()); } catch {}
+      try {
+        setPdfs(getPdfs());
+      } catch {
+        /* ignore */
+      }
+      try {
+        setExtractedDomains(getExtractedDomains().length);
+      } catch {
+        /* ignore */
+      }
+      try {
+        setQueueState(getQueue());
+      } catch {
+        /* ignore */
+      }
+      try {
+        setTotal(allTopicsMerged().length);
+      } catch {
+        /* ignore */
+      }
+      try {
+        setReports(getAllCompletenessReports());
+      } catch {
+        /* ignore */
+      }
 
-      supabase.from("profiles").select("id", { count: "exact", head: true })
+      supabase
+        .from("profiles")
+        .select("id", { count: "exact", head: true })
         .then(
           ({ count }) => setUserCount(Math.max(count ?? 0, auth.user ? 1 : 0)),
-          () => { if (auth.user) setUserCount(1); }
+          () => {
+            if (auth.user) setUserCount(1);
+          },
         );
 
-      supabase.from("user_completions").select("slug", { count: "exact", head: true })
+      supabase
+        .from("user_completions")
+        .select("slug", { count: "exact", head: true })
         .then(
           ({ count }) => setTotalCompletions(count ?? 0),
-          () => {}
+          () => {},
         );
 
-      supabase.from("lessons").select("slug", { count: "exact", head: true })
+      supabase
+        .from("lessons")
+        .select("slug", { count: "exact", head: true })
         .then(
           ({ count }) => setSharedLessonCount(count ?? 0),
-          () => {}
+          () => {},
         );
     };
 
@@ -276,21 +304,35 @@ function AdminOverview() {
   const jobsDone = jobs.filter((j) => j.status === "done").length;
   const jobsSkipped = jobs.filter((j) => j.status === "skipped").length;
   const jobsError = jobs.filter((j) => j.status === "error").length;
-  const jobsPending = jobs.filter((j) => j.status === "pending" || j.status === "generating").length;
+  const jobsPending = jobs.filter(
+    (j) => j.status === "pending" || j.status === "generating",
+  ).length;
   const jobsTotal = jobs.length;
 
   return (
     <div className="space-y-6">
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <Stat label="Total users" value={userCount} icon={<Users className="h-4 w-4" />} />
-        <Stat label="Shared lessons" value={sharedLessonCount} icon={<BarChart3 className="h-4 w-4" />} />
-        <Stat label="Total completions" value={totalCompletions} icon={<CheckCircle2 className="h-4 w-4" />} />
+        <Stat
+          label="Shared lessons"
+          value={sharedLessonCount}
+          icon={<BarChart3 className="h-4 w-4" />}
+        />
+        <Stat
+          label="Total completions"
+          value={totalCompletions}
+          icon={<CheckCircle2 className="h-4 w-4" />}
+        />
         <Stat label="Queue backlog" value={running} icon={<PlayCircle className="h-4 w-4" />} />
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <Stat label="Uploaded PDFs" value={pdfs.length} icon={<FileText className="h-4 w-4" />} />
-        <Stat label="Extracted roadmaps" value={extractedDomains} icon={<ListTree className="h-4 w-4" />} />
+        <Stat
+          label="Extracted roadmaps"
+          value={extractedDomains}
+          icon={<ListTree className="h-4 w-4" />}
+        />
         <Stat label="Total lessons" value={total} icon={<CheckCircle2 className="h-4 w-4" />} />
         <Stat label="Queue errors" value={qErrors} icon={<AlertTriangle className="h-4 w-4" />} />
       </div>
@@ -330,15 +372,16 @@ function AdminOverview() {
           </div>
           <button
             onClick={() => {
-              const filtered = allTopicsMerged().filter(t =>
-                t.topic.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                t.section.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                t.domain.title.toLowerCase().includes(searchTerm.toLowerCase())
+              const filtered = allTopicsMerged().filter(
+                (t) =>
+                  t.topic.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  t.section.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  t.domain.title.toLowerCase().includes(searchTerm.toLowerCase()),
               );
               if (selectedSlugs.size === filtered.length) {
                 setSelectedSlugs(new Set());
               } else {
-                setSelectedSlugs(new Set(filtered.map(t => t.topic.slug)));
+                setSelectedSlugs(new Set(filtered.map((t) => t.topic.slug)));
               }
             }}
             className="text-xs px-3 py-2 border border-border rounded-xl hover:bg-muted font-medium shrink-0"
@@ -349,10 +392,11 @@ function AdminOverview() {
 
         <div className="max-h-60 overflow-y-auto border border-border/60 rounded-xl divide-y divide-border/40 text-xs">
           {allTopicsMerged()
-            .filter(t =>
-              t.topic.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              t.section.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              t.domain.title.toLowerCase().includes(searchTerm.toLowerCase())
+            .filter(
+              (t) =>
+                t.topic.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                t.section.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                t.domain.title.toLowerCase().includes(searchTerm.toLowerCase()),
             )
             .slice(0, 50)
             .map((t) => {
@@ -389,7 +433,10 @@ function AdminOverview() {
 
       {/* Quick links */}
       <div className="grid md:grid-cols-2 gap-4">
-        <Link to="/admin/pdfs" className="rounded-2xl border border-border bg-card p-5 hover:shadow-md transition-shadow">
+        <Link
+          to="/admin/pdfs"
+          className="rounded-2xl border border-border bg-card p-5 hover:shadow-md transition-shadow"
+        >
           <Upload className="h-5 w-5 text-primary" />
           <div className="mt-2 font-semibold">Upload &amp; parse a PDF</div>
           <div className="text-sm text-muted-foreground mt-1">
@@ -399,7 +446,10 @@ function AdminOverview() {
             {parsing} parsing · {done} done · {errors} failed
           </div>
         </Link>
-        <Link to="/admin/topics" className="rounded-2xl border border-border bg-card p-5 hover:shadow-md transition-shadow">
+        <Link
+          to="/admin/topics"
+          className="rounded-2xl border border-border bg-card p-5 hover:shadow-md transition-shadow"
+        >
           <ListTree className="h-5 w-5 text-primary" />
           <div className="mt-2 font-semibold">Review extracted topics</div>
           <div className="text-sm text-muted-foreground mt-1">
@@ -409,7 +459,10 @@ function AdminOverview() {
             Base: {DOMAINS.length} roadmaps · Extracted: {extractedDomains}
           </div>
         </Link>
-        <Link to="/admin/users" className="rounded-2xl border border-border bg-card p-5 hover:shadow-md transition-shadow">
+        <Link
+          to="/admin/users"
+          className="rounded-2xl border border-border bg-card p-5 hover:shadow-md transition-shadow"
+        >
           <Users className="h-5 w-5 text-primary" />
           <div className="mt-2 font-semibold">Manage Users</div>
           <div className="text-sm text-muted-foreground mt-1">
@@ -423,7 +476,10 @@ function AdminOverview() {
 
       {/* Queue Summary */}
       {queue.length > 0 && (
-        <Link to="/admin/queue" className="block rounded-2xl border border-border bg-card p-5 hover:shadow-md transition-shadow">
+        <Link
+          to="/admin/queue"
+          className="block rounded-2xl border border-border bg-card p-5 hover:shadow-md transition-shadow"
+        >
           <PlayCircle className="h-5 w-5 text-primary" />
           <div className="mt-2 font-semibold">Regeneration Queue</div>
           <div className="flex flex-wrap gap-4 mt-2 text-xs text-muted-foreground">
@@ -465,11 +521,12 @@ function AdminOverview() {
                       className="h-full rounded-full transition-all"
                       style={{
                         width: `${Math.min(r.coveragePercent, 100)}%`,
-                        background: r.coveragePercent >= 95
-                          ? "oklch(0.6 0.2 145)"
-                          : r.coveragePercent >= 70
-                            ? "oklch(0.7 0.18 80)"
-                            : "oklch(0.6 0.22 27)",
+                        background:
+                          r.coveragePercent >= 95
+                            ? "oklch(0.6 0.2 145)"
+                            : r.coveragePercent >= 70
+                              ? "oklch(0.7 0.18 80)"
+                              : "oklch(0.6 0.22 27)",
                       }}
                     />
                   </div>
@@ -502,7 +559,8 @@ function AdminOverview() {
               .filter((p) => p.quality?.warnings?.length)
               .map((p) => (
                 <li key={p.id}>
-                  <strong className="text-foreground">{p.name}</strong>: {p.quality!.warnings!.join("; ")}
+                  <strong className="text-foreground">{p.name}</strong>:{" "}
+                  {p.quality!.warnings!.join("; ")}
                 </li>
               ))}
           </ul>
@@ -512,10 +570,21 @@ function AdminOverview() {
   );
 }
 
-function Stat({ label, value, icon }: { label: string; value: number | string; icon: React.ReactNode }) {
+function Stat({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: number | string;
+  icon: React.ReactNode;
+}) {
   return (
     <div className="rounded-2xl border border-border bg-card p-4">
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">{icon}{label}</div>
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        {icon}
+        {label}
+      </div>
       <div className="mt-2 text-2xl font-bold">{value}</div>
     </div>
   );

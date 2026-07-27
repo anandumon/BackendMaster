@@ -2,7 +2,17 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { getAllUsersStats } from "@/lib/lesson-db";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Shield, ShieldOff, Flame, Bookmark, Loader2, Crown, UserX, BarChart3 } from "lucide-react";
+import {
+  Users,
+  Shield,
+  ShieldOff,
+  Flame,
+  Bookmark,
+  Loader2,
+  Crown,
+  UserX,
+  BarChart3,
+} from "lucide-react";
 
 export const Route = createFileRoute("/admin/users")({
   component: UsersPage,
@@ -70,8 +80,16 @@ function UsersPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <MiniStat icon={<Users className="h-4 w-4" />} label="Total users" value={totalUsers} />
         <MiniStat icon={<Crown className="h-4 w-4" />} label="Admins" value={adminCount} />
-        <MiniStat icon={<Flame className="h-4 w-4" />} label="Total completions" value={totalCompleted} />
-        <MiniStat icon={<BarChart3 className="h-4 w-4" />} label="Avg progress" value={totalUsers > 0 ? Math.round(totalCompleted / totalUsers) : 0} />
+        <MiniStat
+          icon={<Flame className="h-4 w-4" />}
+          label="Total completions"
+          value={totalCompleted}
+        />
+        <MiniStat
+          icon={<BarChart3 className="h-4 w-4" />}
+          label="Avg progress"
+          value={totalUsers > 0 ? Math.round(totalCompleted / totalUsers) : 0}
+        />
       </div>
 
       {/* Users table */}
@@ -100,19 +118,27 @@ function UsersPage() {
                     <div className="text-xs text-muted-foreground">{u.email}</div>
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full ${u.role === "admin" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
-                      {u.role === "admin" ? <Shield className="h-3 w-3" /> : <UserX className="h-3 w-3" />}
+                    <span
+                      className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full ${u.role === "admin" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
+                    >
+                      {u.role === "admin" ? (
+                        <Shield className="h-3 w-3" />
+                      ) : (
+                        <UserX className="h-3 w-3" />
+                      )}
                       {u.role}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-center">
                     <span className="inline-flex items-center gap-1 text-xs">
-                      <Flame className="h-3 w-3 text-green-500" />{u.completedCount}
+                      <Flame className="h-3 w-3 text-green-500" />
+                      {u.completedCount}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-center">
                     <span className="inline-flex items-center gap-1 text-xs">
-                      <Bookmark className="h-3 w-3 text-amber-500" />{u.bookmarkCount}
+                      <Bookmark className="h-3 w-3 text-amber-500" />
+                      {u.bookmarkCount}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-xs text-muted-foreground">
@@ -123,9 +149,17 @@ function UsersPage() {
                       onClick={() => toggleAdmin(u.id, u.role)}
                       disabled={busy === u.id || u.email === "anandu2109@gmail.com"}
                       className={`text-xs inline-flex items-center gap-1 px-2 py-1 rounded-md border ${u.role === "admin" ? "border-destructive/40 text-destructive hover:bg-destructive/5" : "border-primary/40 text-primary hover:bg-primary/5"} disabled:opacity-50`}
-                      title={u.email === "anandu2109@gmail.com" ? "Super admin cannot be demoted" : ""}
+                      title={
+                        u.email === "anandu2109@gmail.com" ? "Super admin cannot be demoted" : ""
+                      }
                     >
-                      {busy === u.id ? <Loader2 className="h-3 w-3 animate-spin" /> : u.role === "admin" ? <ShieldOff className="h-3 w-3" /> : <Shield className="h-3 w-3" />}
+                      {busy === u.id ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : u.role === "admin" ? (
+                        <ShieldOff className="h-3 w-3" />
+                      ) : (
+                        <Shield className="h-3 w-3" />
+                      )}
                       {u.role === "admin" ? "Remove admin" : "Make admin"}
                     </button>
                   </td>
@@ -139,10 +173,21 @@ function UsersPage() {
   );
 }
 
-function MiniStat({ icon, label, value }: { icon: React.ReactNode; label: string; value: number | string }) {
+function MiniStat({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number | string;
+}) {
   return (
     <div className="rounded-2xl border border-border bg-card p-4">
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">{icon}{label}</div>
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        {icon}
+        {label}
+      </div>
       <div className="mt-2 text-2xl font-bold">{value}</div>
     </div>
   );

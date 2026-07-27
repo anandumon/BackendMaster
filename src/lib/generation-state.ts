@@ -102,7 +102,9 @@ export async function startRoadmapGeneration({
   };
   notify();
 
-  console.log(`[Generation] Starting roadmap lesson generation for: "${domainTitle}" (${topics.length} topics)`);
+  console.log(
+    `[Generation] Starting roadmap lesson generation for: "${domainTitle}" (${topics.length} topics)`,
+  );
 
   let completedCount = 0;
 
@@ -129,8 +131,12 @@ export async function startRoadmapGeneration({
     };
     notify();
 
-    console.log(`[Generation] File/Topic [${i + 1}/${topics.length}] now generating: "${t.title}" (${t.slug})`);
-    console.log(`[Generation] Estimated time for current lesson: ~${SECONDS_PER_LESSON} seconds (Total remaining: ~${estSeconds}s)`);
+    console.log(
+      `[Generation] File/Topic [${i + 1}/${topics.length}] now generating: "${t.title}" (${t.slug})`,
+    );
+    console.log(
+      `[Generation] Estimated time for current lesson: ~${SECONDS_PER_LESSON} seconds (Total remaining: ~${estSeconds}s)`,
+    );
 
     try {
       const res = await fetch("/api/lesson", {
@@ -146,7 +152,9 @@ export async function startRoadmapGeneration({
 
       if (!res.ok) {
         const text = await res.text();
-        console.error(`[Generation] Failed topic "${t.title}": ${res.status} ${text.slice(0, 100)}`);
+        console.error(
+          `[Generation] Failed topic "${t.title}": ${res.status} ${text.slice(0, 100)}`,
+        );
         globalState = {
           ...globalState,
           topicStatuses: {
@@ -184,7 +192,9 @@ export async function startRoadmapGeneration({
       };
       notify();
 
-      console.log(`[Generation] Completed file/topic [${completedCount}/${topics.length}]: "${t.title}" (${t.slug})`);
+      console.log(
+        `[Generation] Completed file/topic [${completedCount}/${topics.length}]: "${t.title}" (${t.slug})`,
+      );
     } catch (e) {
       console.error(`[Generation] Exception generating "${t.title}":`, e);
       globalState = {
@@ -207,5 +217,7 @@ export async function startRoadmapGeneration({
   };
   notify();
 
-  console.log(`[Generation] All ${topics.length} topics finished generating for roadmap: "${domainTitle}"`);
+  console.log(
+    `[Generation] All ${topics.length} topics finished generating for roadmap: "${domainTitle}"`,
+  );
 }

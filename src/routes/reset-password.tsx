@@ -79,9 +79,7 @@ function ResetPasswordPage() {
                 <CheckCircle2 className="h-8 w-8 text-green-500" />
               </div>
               <h1 className="text-2xl font-bold">Password updated!</h1>
-              <p className="text-sm text-muted-foreground mt-2">
-                Redirecting to sign in…
-              </p>
+              <p className="text-sm text-muted-foreground mt-2">Redirecting to sign in…</p>
             </div>
           ) : !ready ? (
             <div className="text-center py-8">
@@ -90,7 +88,10 @@ function ResetPasswordPage() {
               <p className="text-xs text-muted-foreground mt-1">
                 If this takes too long, the link may have expired.
               </p>
-              <Link to="/auth" className="mt-4 text-xs text-primary underline underline-offset-2 inline-block">
+              <Link
+                to="/auth"
+                className="mt-4 text-xs text-primary underline underline-offset-2 inline-block"
+              >
                 Request a new reset link
               </Link>
             </div>
@@ -106,7 +107,10 @@ function ResetPasswordPage() {
 
               <form onSubmit={handleReset} className="mt-6 space-y-4">
                 <div>
-                  <label htmlFor="new-password" className="text-xs font-medium text-muted-foreground">
+                  <label
+                    htmlFor="new-password"
+                    className="text-xs font-medium text-muted-foreground"
+                  >
                     New password
                   </label>
                   <input
@@ -121,7 +125,10 @@ function ResetPasswordPage() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="confirm-new-password" className="text-xs font-medium text-muted-foreground">
+                  <label
+                    htmlFor="confirm-new-password"
+                    className="text-xs font-medium text-muted-foreground"
+                  >
                     Confirm new password
                   </label>
                   <input

@@ -1,6 +1,27 @@
 import { useEffect, useRef, useState } from "react";
 import { Play, Pause, Square, Mic, MicOff, SkipForward } from "lucide-react";
-import { getVoiceReaderPosition, setVoiceReaderPosition, clearVoiceReaderPosition } from "@/lib/storage";
+import {
+  getVoiceReaderPosition,
+  setVoiceReaderPosition,
+  clearVoiceReaderPosition,
+} from "@/lib/storage";
+
+interface WebSpeechRecognitionEvent {
+  results: ArrayLike<{
+    0?: { transcript: string };
+  }>;
+}
+
+interface WebSpeechRecognition {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: ((e: WebSpeechRecognitionEvent) => void) | null;
+  onend: (() => void) | null;
+  onerror: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+}
 
 type Props = {
   /** Callable to fetch the plain-text content to read (kept fresh). */
@@ -34,15 +55,18 @@ export function VoiceReader({ getText, onTranscript, lessonSlug }: Props) {
   const [chunkIndex, setChunkIndex] = useState(-1);
   const [totalChunks, setTotalChunks] = useState(0);
   const [hasResumePoint, setHasResumePoint] = useState(false);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<WebSpeechRecognition | null>(null);
   const chunksRef = useRef<string[]>([]);
   const currentIdxRef = useRef(0);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     setSupportedTTS("speechSynthesis" in window);
-    const SR: any =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const win = window as unknown as {
+      SpeechRecognition?: new () => WebSpeechRecognition;
+      webkitSpeechRecognition?: new () => WebSpeechRecognition;
+    };
+    const SR = win.SpeechRecognition || win.webkitSpeechRecognition;
     setSupportedSTT(Boolean(SR));
 
     const loadVoices = () => {
@@ -68,7 +92,9 @@ export function VoiceReader({ getText, onTranscript, lessonSlug }: Props) {
       emitStop();
       try {
         recognitionRef.current?.stop();
-      } catch {}
+      } catch {
+        /* ignore */
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -78,9 +104,7 @@ export function VoiceReader({ getText, onTranscript, lessonSlug }: Props) {
     currentIdxRef.current = index;
     // Persist position for resume
     if (lessonSlug) setVoiceReaderPosition(lessonSlug, index);
-    window.dispatchEvent(
-      new CustomEvent("voice-reader:chunk", { detail: { index, text } }),
-    );
+    window.dispatchEvent(new CustomEvent("voice-reader:chunk", { detail: { index, text } }));
   }
 
   function emitStop() {
@@ -164,19 +188,25 @@ export function VoiceReader({ getText, onTranscript, lessonSlug }: Props) {
     if (listening) {
       try {
         recognitionRef.current?.stop();
-      } catch {}
+      } catch {
+        /* ignore */
+      }
       setListening(false);
       return;
     }
-    const SR: any =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const win = window as unknown as {
+      SpeechRecognition?: new () => WebSpeechRecognition;
+      webkitSpeechRecognition?: new () => WebSpeechRecognition;
+    };
+    const SR = win.SpeechRecognition || win.webkitSpeechRecognition;
+    if (!SR) return;
     const rec = new SR();
     rec.continuous = false;
     rec.interimResults = false;
     rec.lang = "en-US";
-    rec.onresult = (e: any) => {
+    rec.onresult = (e: WebSpeechRecognitionEvent) => {
       const transcript = Array.from(e.results)
-        .map((r: any) => r[0]?.transcript ?? "")
+        .map((r) => r[0]?.transcript ?? "")
         .join(" ")
         .trim();
       if (transcript && onTranscript) onTranscript(transcript);
@@ -272,9 +302,7 @@ export function VoiceReader({ getText, onTranscript, lessonSlug }: Props) {
         <button
           onClick={toggleListen}
           className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border ${
-            listening
-              ? "border-primary bg-primary/10 text-primary"
-              : "border-border hover:bg-muted"
+            listening ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-muted"
           }`}
           title="Ask the AI Teacher by voice"
         >

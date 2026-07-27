@@ -39,7 +39,9 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(verified ? "Email verified! You can now sign in." : null);
+  const [success, setSuccess] = useState<string | null>(
+    verified ? "Email verified! You can now sign in." : null,
+  );
   const [busy, setBusy] = useState(false);
   const verifyPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -47,7 +49,9 @@ function AuthPage() {
 
   // Listen for auth state changes (e.g. hash token exchange from confirmation link)
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if ((event === "SIGNED_IN" || event === "USER_UPDATED") && session) {
         setVerifiedSuccess(true);
         if (verifyPollRef.current) clearInterval(verifyPollRef.current);
@@ -106,8 +110,14 @@ function AuthPage() {
     setBusy(false);
 
     if (signUpError) {
-      if ((signUpError as any).status === 401 || signUpError.message.toLowerCase().includes("apikey") || signUpError.message.toLowerCase().includes("jwt")) {
-        setError("Supabase 401 Unauthorized: The SUPABASE_PUBLISHABLE_KEY in your .env file belongs to an old project. Please copy the new 'anon' key from your Supabase Dashboard (Settings > API) for project cupmcnyxfbqkoexspqif.");
+      if (
+        ("status" in signUpError && (signUpError as { status?: number }).status === 401) ||
+        signUpError.message.toLowerCase().includes("apikey") ||
+        signUpError.message.toLowerCase().includes("jwt")
+      ) {
+        setError(
+          "Supabase 401 Unauthorized: The SUPABASE_PUBLISHABLE_KEY in your .env file belongs to an old project. Please copy the new 'anon' key from your Supabase Dashboard (Settings > API) for project cupmcnyxfbqkoexspqif.",
+        );
       } else {
         setError(signUpError.message);
       }
@@ -159,12 +169,20 @@ function AuthPage() {
     setBusy(false);
 
     if (signInError) {
-      if ((signInError as any).status === 401 && !signInError.message.toLowerCase().includes("invalid login credentials")) {
-        setError("Supabase 401 Unauthorized: The SUPABASE_PUBLISHABLE_KEY in your .env file belongs to an old project. Please copy the new 'anon' key from your Supabase Dashboard (Settings > API) for project cupmcnyxfbqkoexspqif.");
+      if (
+        "status" in signInError &&
+        (signInError as { status?: number }).status === 401 &&
+        !signInError.message.toLowerCase().includes("invalid login credentials")
+      ) {
+        setError(
+          "Supabase 401 Unauthorized: The SUPABASE_PUBLISHABLE_KEY in your .env file belongs to an old project. Please copy the new 'anon' key from your Supabase Dashboard (Settings > API) for project cupmcnyxfbqkoexspqif.",
+        );
       } else if (signInError.message.toLowerCase().includes("email not confirmed")) {
         setError("Please verify your email first. Check your inbox for a confirmation link.");
       } else if (signInError.message.toLowerCase().includes("invalid login credentials")) {
-        setError("Invalid email or password. If you haven't created an account in this database yet, please click 'Create Account' tab above first.");
+        setError(
+          "Invalid email or password. If you haven't created an account in this database yet, please click 'Create Account' tab above first.",
+        );
       } else {
         setError(signInError.message);
       }
@@ -205,9 +223,12 @@ function AuthPage() {
                 <div className="mx-auto h-16 w-16 rounded-full bg-green-500/10 flex items-center justify-center mb-4 text-green-500">
                   <CheckCircle2 className="h-9 w-9" />
                 </div>
-                <h1 className="text-2xl font-extrabold text-foreground">Account Created Successfully! 🎉</h1>
+                <h1 className="text-2xl font-extrabold text-foreground">
+                  Account Created Successfully! 🎉
+                </h1>
                 <p className="text-sm text-muted-foreground mt-2">
-                  Your email has been verified. You can now close the extra browser tab and return to learning!
+                  Your email has been verified. You can now close the extra browser tab and return
+                  to learning!
                 </p>
                 <div className="mt-6 flex items-center justify-center gap-2 text-xs font-semibold text-primary bg-primary/5 py-2.5 px-4 rounded-xl border border-primary/20">
                   <Loader2 className="h-4 w-4 animate-spin text-primary" />
@@ -220,12 +241,11 @@ function AuthPage() {
                   <Mail className="h-8 w-8 text-primary" />
                 </div>
                 <h1 className="text-2xl font-bold">Check your email</h1>
-                <p className="text-sm text-muted-foreground mt-2">
-                  We sent a verification link to
-                </p>
+                <p className="text-sm text-muted-foreground mt-2">We sent a verification link to</p>
                 <p className="text-sm font-semibold mt-1">{email}</p>
                 <p className="text-xs text-muted-foreground mt-4">
-                  Click the link in your email to verify your account. If the link opens in a separate tab or port, return to this tab!
+                  Click the link in your email to verify your account. If the link opens in a
+                  separate tab or port, return to this tab!
                 </p>
                 <div className="mt-6 flex items-center justify-center gap-2 text-xs text-muted-foreground">
                   <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
@@ -273,15 +293,17 @@ function AuthPage() {
               <CheckCircle2 className="h-8 w-8 text-green-500" />
             </div>
             <h1 className="text-2xl font-bold">Check your email</h1>
-            <p className="text-sm text-muted-foreground mt-2">
-              We sent a password reset link to
-            </p>
+            <p className="text-sm text-muted-foreground mt-2">We sent a password reset link to</p>
             <p className="text-sm font-semibold mt-1">{email}</p>
             <p className="text-xs text-muted-foreground mt-4">
               Click the link to set a new password. The link expires in 1 hour.
             </p>
             <button
-              onClick={() => { setMode("signin"); setError(null); setSuccess(null); }}
+              onClick={() => {
+                setMode("signin");
+                setError(null);
+                setSuccess(null);
+              }}
               className="mt-6 text-xs text-primary underline underline-offset-2"
             >
               ← Back to sign in
@@ -296,7 +318,11 @@ function AuthPage() {
               <div className="flex border-b border-border mb-5">
                 <button
                   type="button"
-                  onClick={() => { setMode("signin"); setError(null); setSuccess(null); }}
+                  onClick={() => {
+                    setMode("signin");
+                    setError(null);
+                    setSuccess(null);
+                  }}
                   className={`flex-1 py-2 text-sm font-semibold border-b-2 transition-colors ${
                     mode === "signin"
                       ? "border-primary text-primary"
@@ -307,7 +333,11 @@ function AuthPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => { setMode("signup"); setError(null); setSuccess(null); }}
+                  onClick={() => {
+                    setMode("signup");
+                    setError(null);
+                    setSuccess(null);
+                  }}
                   className={`flex-1 py-2 text-sm font-semibold border-b-2 transition-colors ${
                     mode === "signup"
                       ? "border-primary text-primary"
@@ -339,9 +369,11 @@ function AuthPage() {
 
             <form
               onSubmit={
-                mode === "signin" ? handleSignIn
-                  : mode === "signup" ? handleSignUp
-                  : handleForgotPassword
+                mode === "signin"
+                  ? handleSignIn
+                  : mode === "signup"
+                    ? handleSignUp
+                    : handleForgotPassword
               }
               className="mt-6 space-y-4"
             >
@@ -380,7 +412,10 @@ function AuthPage() {
 
               {mode === "signup" && (
                 <div>
-                  <label htmlFor="confirm-password" className="text-xs font-medium text-muted-foreground">
+                  <label
+                    htmlFor="confirm-password"
+                    className="text-xs font-medium text-muted-foreground"
+                  >
                     Confirm password
                   </label>
                   <input
@@ -420,14 +455,25 @@ function AuthPage() {
                 <>
                   <div>
                     No account?{" "}
-                    <button className="underline underline-offset-2 text-foreground" onClick={() => { setMode("signup"); setError(null); setSuccess(null); }}>
+                    <button
+                      className="underline underline-offset-2 text-foreground"
+                      onClick={() => {
+                        setMode("signup");
+                        setError(null);
+                        setSuccess(null);
+                      }}
+                    >
                       Create one
                     </button>
                   </div>
                   <div>
                     <button
                       className="underline underline-offset-2 text-muted-foreground hover:text-foreground"
-                      onClick={() => { setMode("forgot"); setError(null); setSuccess(null); }}
+                      onClick={() => {
+                        setMode("forgot");
+                        setError(null);
+                        setSuccess(null);
+                      }}
                     >
                       Forgot password?
                     </button>
@@ -437,14 +483,28 @@ function AuthPage() {
               {mode === "signup" && (
                 <div>
                   Already have an account?{" "}
-                  <button className="underline underline-offset-2 text-foreground" onClick={() => { setMode("signin"); setError(null); setSuccess(null); }}>
+                  <button
+                    className="underline underline-offset-2 text-foreground"
+                    onClick={() => {
+                      setMode("signin");
+                      setError(null);
+                      setSuccess(null);
+                    }}
+                  >
                     Sign in
                   </button>
                 </div>
               )}
               {mode === "forgot" && (
                 <div>
-                  <button className="inline-flex items-center gap-1 underline underline-offset-2 text-foreground" onClick={() => { setMode("signin"); setError(null); setSuccess(null); }}>
+                  <button
+                    className="inline-flex items-center gap-1 underline underline-offset-2 text-foreground"
+                    onClick={() => {
+                      setMode("signin");
+                      setError(null);
+                      setSuccess(null);
+                    }}
+                  >
                     <ArrowLeft className="h-3 w-3" /> Back to sign in
                   </button>
                 </div>

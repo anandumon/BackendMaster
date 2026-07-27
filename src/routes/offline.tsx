@@ -139,7 +139,10 @@ function OfflinePage() {
 
       if (!res.ok) {
         const text = await res.text();
-        const err = res.status === 429 ? "AI Rate Limit — retry in a few moments." : text.slice(0, 200) || "Extraction failed.";
+        const err =
+          res.status === 429
+            ? "AI Rate Limit — retry in a few moments."
+            : text.slice(0, 200) || "Extraction failed.";
         upsertPdf({ ...pdfRec, status: "error", error: err });
         setPdfError(err);
         setUploadingPdf(false);
@@ -160,11 +163,21 @@ function OfflinePage() {
         icon: json.icon || "🗺️",
         color: palette(existingCount),
         tagline: json.tagline || "Custom Roadmap extracted from uploaded PDF.",
-        sections: json.sections.map((s: any) => ({
-          slug: s.slug,
-          title: s.title,
-          topics: s.topics.map((t: any) => ({ slug: t.slug, title: t.title, summary: t.summary || "" })),
-        })),
+        sections: json.sections.map(
+          (s: {
+            slug: string;
+            title: string;
+            topics: Array<{ slug: string; title: string; summary?: string }>;
+          }) => ({
+            slug: s.slug,
+            title: s.title,
+            topics: s.topics.map((t: { slug: string; title: string; summary?: string }) => ({
+              slug: t.slug,
+              title: t.title,
+              summary: t.summary || "",
+            })),
+          }),
+        ),
         extractedFromPdfId: pdfId,
         extractedAt: Date.now(),
       };
@@ -172,7 +185,9 @@ function OfflinePage() {
       addExtractedDomain(domain);
       upsertPdf({ ...pdfRec, status: "done", domainSlugs: [domain.slug] });
 
-      console.log(`[Generation] Roadmap extracted successfully: "${domain.title}" with ${domain.sections.length} sections.`);
+      console.log(
+        `[Generation] Roadmap extracted successfully: "${domain.title}" with ${domain.sections.length} sections.`,
+      );
 
       // Flatten topics into sequential order
       const orderedTopics: Array<{ slug: string; title: string; section: string }> = [];
@@ -191,7 +206,6 @@ function OfflinePage() {
         topics: orderedTopics,
         userId: auth.user?.id,
       });
-
     } catch (e) {
       console.error("[Generation] PDF upload error:", e);
       setPdfError((e as Error).message || "Failed to process PDF.");
@@ -208,7 +222,8 @@ function OfflinePage() {
           </div>
           <h1 className="text-2xl lg:text-3xl font-bold mt-1">Read lessons without internet</h1>
           <p className="text-sm text-muted-foreground mt-2">
-            Pre-download topics for offline access. Lessons stored on this device can be read anytime.
+            Pre-download topics for offline access. Lessons stored on this device can be read
+            anytime.
           </p>
           <div className="mt-3 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
             {online ? (
@@ -298,10 +313,13 @@ function OfflinePage() {
               <div>
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="h-4 w-4 text-primary" />
-                  <h2 className="text-lg font-bold">Admin Roadmap PDF Upload &amp; Lesson Generator</h2>
+                  <h2 className="text-lg font-bold">
+                    Admin Roadmap PDF Upload &amp; Lesson Generator
+                  </h2>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Upload a PDF roadmap to extract sections/topics and generate all lessons sequentially into the DB.
+                  Upload a PDF roadmap to extract sections/topics and generate all lessons
+                  sequentially into the DB.
                 </p>
               </div>
               <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-primary/10 text-primary">
@@ -315,7 +333,8 @@ function OfflinePage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-sm font-semibold">
                     <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                    Generating Roadmap: <span className="text-primary">{genState.activeRoadmapTitle}</span>
+                    Generating Roadmap:{" "}
+                    <span className="text-primary">{genState.activeRoadmapTitle}</span>
                   </div>
                   <button
                     onClick={cancelRoadmapGeneration}
@@ -365,7 +384,9 @@ function OfflinePage() {
             <div
               onClick={() => pdfInputRef.current?.click()}
               className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${
-                uploadingPdf ? "border-primary bg-primary/5 opacity-70" : "border-border hover:border-primary/50 bg-background"
+                uploadingPdf
+                  ? "border-primary bg-primary/5 opacity-70"
+                  : "border-border hover:border-primary/50 bg-background"
               }`}
             >
               <input
@@ -381,11 +402,13 @@ function OfflinePage() {
               <Upload className="h-8 w-8 mx-auto text-primary" />
               <h3 className="mt-2 font-semibold text-sm">Select or drop a Roadmap PDF</h3>
               <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
-                AI will parse the roadmap tree and automatically generate every topic's lesson content in order.
+                AI will parse the roadmap tree and automatically generate every topic's lesson
+                content in order.
               </p>
               {uploadingPdf && (
                 <div className="mt-3 inline-flex items-center gap-2 text-xs font-medium text-primary">
-                  <Loader2 className="h-4 w-4 animate-spin" /> Parsing PDF and extracting roadmap structure...
+                  <Loader2 className="h-4 w-4 animate-spin" /> Parsing PDF and extracting roadmap
+                  structure...
                 </div>
               )}
             </div>

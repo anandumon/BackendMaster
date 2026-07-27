@@ -29,7 +29,8 @@ function TopicsPage() {
 
   const baseSlugs = useMemo(() => {
     const s = new Set<string>();
-    for (const d of DOMAINS) for (const sec of d.sections) for (const t of sec.topics) s.add(t.slug);
+    for (const d of DOMAINS)
+      for (const sec of d.sections) for (const t of sec.topics) s.add(t.slug);
     return s;
   }, []);
 
@@ -56,7 +57,10 @@ function TopicsPage() {
   function queueRegen(t: FlatTopic) {
     clearCachedLesson(t.topic.slug);
     const q = getQueue();
-    if (q.some((x) => x.slug === t.topic.slug && (x.status === "pending" || x.status === "running"))) return;
+    if (
+      q.some((x) => x.slug === t.topic.slug && (x.status === "pending" || x.status === "running"))
+    )
+      return;
     q.push({
       slug: t.topic.slug,
       title: t.topic.title,
@@ -107,7 +111,9 @@ function TopicsPage() {
         >
           <option value="all">All roadmaps</option>
           {domainOptions.map((d) => (
-            <option key={d.slug} value={d.slug}>{d.title}</option>
+            <option key={d.slug} value={d.slug}>
+              {d.title}
+            </option>
           ))}
         </select>
         <label className="text-xs inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border">
@@ -143,7 +149,9 @@ function TopicsPage() {
             />
           ))}
           {filtered.length === 0 && (
-            <li className="px-4 py-10 text-sm text-muted-foreground text-center">No topics match.</li>
+            <li className="px-4 py-10 text-sm text-muted-foreground text-center">
+              No topics match.
+            </li>
           )}
         </ul>
       </div>
@@ -168,8 +176,12 @@ function TopicRow({
   const [title, setTitle] = useState(t.topic.title);
   const genState = useGenerationState();
   const cached = typeof window !== "undefined" ? !!getCachedLesson(t.topic.slug) : false;
-  const queueItem = typeof window !== "undefined" ? getQueue().find(q => q.slug === t.topic.slug) : undefined;
-  const isRegenerating = genState.currentTopicSlug === t.topic.slug || queueItem?.status === "running" || queueItem?.status === "pending";
+  const queueItem =
+    typeof window !== "undefined" ? getQueue().find((q) => q.slug === t.topic.slug) : undefined;
+  const isRegenerating =
+    genState.currentTopicSlug === t.topic.slug ||
+    queueItem?.status === "running" ||
+    queueItem?.status === "pending";
 
   return (
     <li className="px-4 py-2.5 flex items-center gap-3">
@@ -195,7 +207,10 @@ function TopicRow({
               Save
             </button>
             <button
-              onClick={() => { setTitle(t.topic.title); setEditing(false); }}
+              onClick={() => {
+                setTitle(t.topic.title);
+                setEditing(false);
+              }}
               className="text-xs px-2 py-1 rounded-md border border-border"
             >
               Cancel
@@ -244,7 +259,10 @@ function TopicRow({
         </button>
         <button
           onClick={() => {
-            if (!isExtracted) { alert("Static topics cannot be deleted."); return; }
+            if (!isExtracted) {
+              alert("Static topics cannot be deleted.");
+              return;
+            }
             if (confirm(`Delete topic "${t.topic.title}"?`)) onDelete();
           }}
           disabled={!isExtracted}

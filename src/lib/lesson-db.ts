@@ -1,5 +1,6 @@
 // Lesson DB layer — shared lessons + per-user overrides via Supabase
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { getCachedLesson, setCachedLesson, type LessonContent } from "@/lib/storage";
 
 /** Fetch a lesson: local cache first (0ms) → user override → shared lesson → null */
@@ -20,7 +21,10 @@ export async function fetchLesson(slug: string, userId?: string): Promise<Lesson
         .eq("slug", slug)
         .maybeSingle();
       if (override?.content) {
-        const full = { ...(override.content as any), generatedAt: new Date(override.generated_at).getTime() };
+        const full = {
+          ...(override.content as unknown as LessonContent),
+          generatedAt: new Date(override.generated_at).getTime(),
+        };
         setCachedLesson(slug, full);
         return full;
       }
@@ -37,7 +41,10 @@ export async function fetchLesson(slug: string, userId?: string): Promise<Lesson
       .eq("slug", slug)
       .maybeSingle();
     if (shared?.content) {
-      const full = { ...(shared.content as any), generatedAt: new Date(shared.generated_at).getTime() };
+      const full = {
+        ...(shared.content as unknown as LessonContent),
+        generatedAt: new Date(shared.generated_at).getTime(),
+      };
       setCachedLesson(slug, full);
       return full;
     }
@@ -57,14 +64,16 @@ export async function saveSharedLesson(
   domain: string,
   section: string,
   content: LessonContent,
-  userId?: string
+  userId?: string,
 ) {
   let uid = userId;
   if (!uid) {
     try {
       const { data } = await supabase.auth.getUser();
       uid = data?.user?.id;
-    } catch {}
+    } catch {
+      /* ignore */
+    }
   }
   const { error } = await supabase.from("lessons").upsert(
     {
@@ -72,11 +81,11 @@ export async function saveSharedLesson(
       title,
       domain,
       section_name: section,
-      content: content as any,
+      content: content as unknown as Json,
       generated_at: new Date().toISOString(),
       generated_by: uid ?? null,
     },
-    { onConflict: "slug" }
+    { onConflict: "slug" },
   );
   if (error) {
     console.error("saveSharedLesson error:", error);
@@ -100,7 +109,7 @@ export async function syncRegenQueueWithDB() {
     for (const l of sharedLessons) {
       if (l.content) {
         const fullContent: LessonContent = {
-          ...(l.content as any),
+          ...(l.content as unknown as LessonContent),
           generatedAt: l.generated_at ? new Date(l.generated_at).getTime() : Date.now(),
         };
         setCachedLesson(l.slug, fullContent);
@@ -131,10 +140,10 @@ export async function saveUserOverride(userId: string, slug: string, content: Le
     {
       user_id: userId,
       slug,
-      content: content as any,
+      content: content as unknown as Json,
       generated_at: new Date().toISOString(),
     },
-    { onConflict: "user_id,slug" }
+    { onConflict: "user_id,slug" },
   );
   if (error) {
     console.error("saveUserOverride error:", error);
@@ -183,13 +192,18 @@ import { getPinnedLessons, togglePinnedLesson, setPinnedLessons, unpinLesson } f
 
 export async function getPinnedDB(userId: string): Promise<string[]> {
   try {
-    const { data, error } = await supabase.from("user_pins" as any).select("slug").eq("user_id", userId);
+    const { data, error } = await supabase
+      .from("user_pins" as never)
+      .select("slug")
+      .eq("user_id", userId);
     if (!error && data) {
-      const slugs = data.map((r: any) => r.slug);
+      const slugs = (data as Array<{ slug: string }>).map((r) => r.slug);
       setPinnedLessons(slugs);
       return slugs;
     }
-  } catch {}
+  } catch {
+    /* ignore */
+  }
   return getPinnedLessons();
 }
 
@@ -198,13 +212,19 @@ export async function togglePinDB(userId: string, slug: string): Promise<string[
   const isPinned = updated.includes(slug);
   try {
     if (isPinned) {
-      await supabase.from("user_pins" as any).insert({ user_id: userId, slug });
+      await supabase.from("user_pins" as never).insert({ user_id: userId, slug } as never);
       logActivity(userId, "lesson_pinned", slug);
     } else {
-      await supabase.from("user_pins" as any).delete().eq("user_id", userId).eq("slug", slug);
+      await supabase
+        .from("user_pins" as never)
+        .delete()
+        .eq("user_id", userId)
+        .eq("slug", slug);
       logActivity(userId, "lesson_unpinned", slug);
     }
-  } catch {}
+  } catch {
+    /* ignore */
+  }
   return updated;
 }
 
@@ -212,18 +232,32 @@ export async function unpinLessonDB(userId: string | undefined, slug: string): P
   const updated = unpinLesson(slug);
   if (userId) {
     try {
-      await supabase.from("user_pins" as any).delete().eq("user_id", userId).eq("slug", slug);
+      await supabase
+        .from("user_pins" as never)
+        .delete()
+        .eq("user_id", userId)
+        .eq("slug", slug);
       logActivity(userId, "lesson_unpinned", slug);
-    } catch {}
+    } catch {
+      /* ignore */
+    }
   }
   return updated;
 }
 
 // ─── Activity Logging ──────────────────────────────────────────
-export async function logActivity(userId: string, action: string, slug?: string, metadata?: Record<string, any>) {
+export async function logActivity(
+  userId: string,
+  action: string,
+  slug?: string,
+  metadata?: Record<string, unknown>,
+) {
   await supabase.from("user_activity").insert({
-    user_id: userId, action, slug, metadata: metadata ?? {},
-  });
+    user_id: userId,
+    action,
+    slug,
+    metadata: metadata ?? {},
+  } as never);
 }
 
 export async function getRecentActivity(userId: string, limit = 20) {

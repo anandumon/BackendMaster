@@ -124,7 +124,9 @@ export async function startBackgroundDownload() {
         notify();
         continue;
       }
-    } catch {}
+    } catch {
+      /* ignore */
+    }
 
     globalState = {
       ...globalState,
@@ -133,7 +135,9 @@ export async function startBackgroundDownload() {
     };
     notify();
 
-    console.log(`[Offline Downloader] Caching lesson [${i + 1}/${topics.length}]: "${t.topic.title}"`);
+    console.log(
+      `[Offline Downloader] Caching lesson [${i + 1}/${topics.length}]: "${t.topic.title}"`,
+    );
 
     let success = false;
     for (let attempt = 1; attempt <= 3; attempt++) {
@@ -152,7 +156,9 @@ export async function startBackgroundDownload() {
 
         if (!res.ok) {
           if (res.status === 429) {
-            console.warn(`[Offline Downloader] Rate limited (429) on "${t.topic.title}". Pausing 4s before retry...`);
+            console.warn(
+              `[Offline Downloader] Rate limited (429) on "${t.topic.title}". Pausing 4s before retry...`,
+            );
             await new Promise((r) => setTimeout(r, 4000));
             continue;
           }
@@ -231,7 +237,9 @@ export function clearAllDownloads() {
   for (const t of topics) {
     try {
       localStorage.removeItem(`lesson-cache:${t.topic.slug}`);
-    } catch {}
+    } catch {
+      /* ignore */
+    }
   }
   globalState = {
     ...globalState,

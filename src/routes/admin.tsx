@@ -2,14 +2,26 @@ import { createFileRoute, Link, Outlet, useRouterState, useNavigate } from "@tan
 import { AppShell } from "@/components/AppShell";
 import { useAuth } from "@/lib/useAuth";
 import { useEffect } from "react";
-import { Shield, Upload, ListTree, PlayCircle, LayoutDashboard, Loader2, Lock, Users } from "lucide-react";
+import {
+  Shield,
+  Upload,
+  ListTree,
+  PlayCircle,
+  LayoutDashboard,
+  Loader2,
+  Lock,
+  Users,
+} from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   component: AdminLayout,
   head: () => ({
     meta: [
       { title: "Admin · BackendMaster AI" },
-      { name: "description", content: "Curriculum admin: manage PDFs, extracted topics, and lesson regeneration." },
+      {
+        name: "description",
+        content: "Curriculum admin: manage PDFs, extracted topics, and lesson regeneration.",
+      },
       { name: "robots", content: "noindex,nofollow" },
     ],
   }),
@@ -45,8 +57,8 @@ function AdminLayout() {
           <h1 className="mt-4 text-xl font-bold">Admins only</h1>
           <p className="text-sm text-muted-foreground mt-2">
             Your account is signed in as{" "}
-            <span className="font-medium text-foreground">{auth.user?.email}</span>, but doesn't have
-            admin access. The first person to sign up on this deployment becomes the admin.
+            <span className="font-medium text-foreground">{auth.user?.email}</span>, but doesn't
+            have admin access. The first person to sign up on this deployment becomes the admin.
           </p>
           <button
             onClick={() => auth.signOut()}
@@ -85,7 +97,9 @@ function AdminShell() {
             <div className="text-xs uppercase tracking-widest text-primary font-semibold flex items-center gap-1.5">
               <Shield className="h-3.5 w-3.5" /> Admin Control Center
             </div>
-            <h1 className="text-2xl lg:text-3xl font-extrabold mt-1 tracking-tight">Curriculum &amp; System Settings</h1>
+            <h1 className="text-2xl lg:text-3xl font-extrabold mt-1 tracking-tight">
+              Curriculum &amp; System Settings
+            </h1>
           </div>
         </header>
 
