@@ -31,6 +31,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ChevronRight,
   CheckCircle2,
+  CheckCircle,
+  XCircle,
+  HelpCircle,
+  Lightbulb,
   Circle,
   Bookmark,
   BookmarkCheck,
@@ -566,11 +570,42 @@ function McqList({
 }: {
   items: Array<{ q: string; options: string[]; answer: number; explanation: string }>;
 }) {
+  const [answers, setAnswers] = useState<Record<number, number>>({});
+  const total = items.length;
+  const answeredCount = Object.keys(answers).length;
+  const correctCount = Object.entries(answers).filter(
+    ([idx, ans]) => items[Number(idx)]?.answer === ans,
+  ).length;
+
   return (
-    <div className="space-y-4">
-      {items.map((m, i) => (
-        <Mcq key={i} item={m} index={i} />
-      ))}
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-xl bg-muted/40 border border-border/80">
+        <div className="flex items-center gap-2">
+          <HelpCircle className="h-5 w-5 text-primary" />
+          <span className="text-sm font-semibold text-foreground">Interactive Self-Assessment</span>
+        </div>
+        <div className="flex items-center gap-3 text-xs">
+          <span className="px-2.5 py-1 rounded-full bg-primary/10 text-primary font-medium">
+            Answered: {answeredCount} / {total}
+          </span>
+          {answeredCount > 0 && (
+            <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium">
+              Score: {correctCount} / {answeredCount} ({Math.round((correctCount / answeredCount) * 100)}%)
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="space-y-5">
+        {items.map((m, i) => (
+          <Mcq
+            key={i}
+            item={m}
+            index={i}
+            onAnswer={(selectedIdx) => setAnswers((prev) => ({ ...prev, [i]: selectedIdx }))}
+          />
+        ))}
+      </div>
     </div>
   );
 }
@@ -578,37 +613,83 @@ function McqList({
 function Mcq({
   item,
   index,
+  onAnswer,
 }: {
   item: { q: string; options: string[]; answer: number; explanation: string };
   index: number;
+  onAnswer: (selectedIdx: number) => void;
 }) {
   const [picked, setPicked] = useState<number | null>(null);
+
+  const handlePick = (i: number) => {
+    if (picked !== null) return;
+    setPicked(i);
+    onAnswer(i);
+  };
+
   return (
-    <div className="rounded-xl border border-border p-4">
-      <div className="text-sm font-medium mb-2">
-        <span className="text-muted-foreground">Q{index + 1}.</span> {item.q}
+    <div className="rounded-2xl border border-border/80 bg-card p-5 shadow-sm transition-all hover:border-border">
+      <div className="flex items-start gap-3 mb-4">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary">
+          Q{index + 1}
+        </span>
+        <h4 className="text-sm font-semibold leading-relaxed text-foreground">{item.q}</h4>
       </div>
-      <div className="grid gap-2">
+
+      <div className="grid gap-2.5">
         {item.options.map((o, i) => {
           const isCorrect = i === item.answer;
           const isPicked = picked === i;
           const showResult = picked !== null;
+
+          let btnStyle = "border-border/70 hover:bg-muted/50 text-foreground";
+          if (showResult) {
+            if (isCorrect) {
+              btnStyle =
+                "border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-medium shadow-[0_0_12px_rgba(16,185,129,0.15)]";
+            } else if (isPicked && !isCorrect) {
+              btnStyle =
+                "border-rose-500/50 bg-rose-500/10 text-rose-700 dark:text-rose-300 font-medium";
+            } else {
+              btnStyle = "border-border/40 opacity-50 text-muted-foreground";
+            }
+          }
+
           return (
             <button
               key={i}
-              onClick={() => picked === null && setPicked(i)}
-              className={`text-left text-sm px-3 py-2 rounded-lg border transition-colors ${showResult && isCorrect ? "border-green-500 bg-green-500/10" : showResult && isPicked && !isCorrect ? "border-destructive bg-destructive/10" : "border-border hover:bg-muted"}`}
+              onClick={() => handlePick(i)}
+              disabled={showResult}
+              className={`group flex items-center justify-between text-left text-sm px-4 py-3 rounded-xl border transition-all duration-200 ${btnStyle}`}
             >
-              <span className="font-medium mr-1">{String.fromCharCode(65 + i)}.</span>
-              {o}
+              <div className="flex items-center gap-3">
+                <span
+                  className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-xs font-bold transition-colors ${showResult && isCorrect ? "bg-emerald-500 text-white" : showResult && isPicked && !isCorrect ? "bg-rose-500 text-white" : "bg-muted text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary"}`}
+                >
+                  {String.fromCharCode(65 + i)}
+                </span>
+                <span className="leading-normal">{o}</span>
+              </div>
+              {showResult && isCorrect && (
+                <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0 ml-2" />
+              )}
+              {showResult && isPicked && !isCorrect && (
+                <XCircle className="h-4 w-4 text-rose-500 shrink-0 ml-2" />
+              )}
             </button>
           );
         })}
       </div>
+
       {picked !== null && (
-        <div className="mt-3 text-xs text-muted-foreground">
-          <strong className="text-foreground">Explanation: </strong>
-          {item.explanation}
+        <div
+          className={`mt-4 rounded-xl p-4 border text-xs leading-relaxed transition-all duration-300 ${picked === item.answer ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-950 dark:text-emerald-200" : "bg-muted/60 border-border text-foreground"}`}
+        >
+          <div className="flex items-center gap-2 font-bold mb-1 text-sm text-foreground">
+            <Lightbulb className="h-4 w-4 text-amber-500" />
+            Explanatory Note
+          </div>
+          <Markdown>{item.explanation}</Markdown>
         </div>
       )}
     </div>

@@ -189,14 +189,53 @@ export function allTopicsMerged(): FlatTopic[] {
 }
 
 export function findLessonMerged(slug: string) {
+  if (!slug) return null;
+  const normSlug = slug.toLowerCase().trim();
+
+  // 1. Exact or normalized slug match
   for (const domain of getAllDomains()) {
     for (const section of domain.sections) {
       for (const topic of section.topics) {
-        if (topic.slug === slug) return { domain, section, topic };
+        if (topic.slug.toLowerCase().trim() === normSlug) return { domain, section, topic };
       }
     }
   }
-  return null;
+
+  // 2. Title-derived slug match (e.g. "control-flow" -> "Control Flow")
+  for (const domain of getAllDomains()) {
+    for (const section of domain.sections) {
+      for (const topic of section.topics) {
+        const topicTitleSlug = topic.title
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, "");
+        if (topicTitleSlug === normSlug) return { domain, section, topic };
+      }
+    }
+  }
+
+  // 3. Dynamic fallback for any valid topic slug so no valid URL returns 404
+  const formattedTitle = slug
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+
+  return {
+    domain: {
+      slug: "general",
+      title: "Backend Engineering",
+      icon: "💻",
+      color: "oklch(0.6 0.2 240)",
+      tagline: "Core engineering concepts and topics",
+      sections: [],
+    },
+    section: { slug: "core-topics", title: "Core Topics", topics: [] },
+    topic: {
+      slug,
+      title: formattedTitle,
+      summary: `Master class and textbook-quality guide for ${formattedTitle}.`,
+    },
+  };
 }
 
 export function findAdjacentMerged(slug: string) {
