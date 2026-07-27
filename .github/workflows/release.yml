@@ -1,0 +1,52 @@
+name: Release Candidate (RELEASE)
+
+on:
+  push:
+    branches:
+      - release
+
+jobs:
+  build-and-prepare-release:
+    name: Build & Prepare Release Candidate
+    runs-on: ubuntu-latest
+    environment: release
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Strict Type Check & Lint
+        run: |
+          npm run typecheck
+          npm run lint
+
+      - name: Build Application (Release Candidate)
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL_RELEASE || secrets.VITE_SUPABASE_URL }}
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL_RELEASE || secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY_RELEASE || secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY_RELEASE || secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+          SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+
+      - name: Archive Release Candidate Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-candidate-artifact
+          path: .output
+          retention-days: 30
+
+      - name: Deploy to Release Staging Environment
+        run: |
+          echo "Deploying Release Candidate to Staging/Pre-production..."
