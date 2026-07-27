@@ -42,6 +42,7 @@ Create a `.env` file in the root directory:
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
 OPENROUTER_API_KEY=your-openrouter-key
+VITE_SUPABASE_PROJECT_ID=https://supabase.com/your-project-id
 ```
 
 ### 3. Installation & Run
