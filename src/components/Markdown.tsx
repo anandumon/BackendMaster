@@ -5,8 +5,10 @@ import { Copy, Check, Terminal, BookOpen } from "lucide-react";
 import { lookupJavadoc, type JavadocEntry } from "@/lib/javadoc-db";
 import { JavadocModal } from "@/components/JavadocModal";
 
-const JAVA_KEYWORD_REGEX =
-  /\b(Predicate|Consumer|Function|Supplier|BiFunction|UnaryOperator|BinaryOperator|Runnable|Callable|Comparator|Stream|Optional|List|ArrayList|Map|HashMap|Set|HashSet|Queue|Deque|AutoCloseable|Closeable|Thread|ExecutorService|Future|CompletableFuture|ReentrantLock|AtomicInteger|if|else|switch|case|for|while|do|break|continue|return|try|catch|finally|throw|throws|class|interface|enum|record|extends|implements|super|this|instanceof|public|private|protected|static|final|synchronized|volatile|transient|var|void|int|long|boolean|double|float|yield|sealed|permits|@FunctionalInterface)\b/g;
+// Only match explicit, non-ambiguous Java API interfaces, annotations & specific multi-word types in plain text prose.
+// Common lowercase keywords (for, class, if, do, this, var, try, etc.) are ONLY rendered as chips when formatted as code (`for`, `class`).
+const PLAIN_TEXT_JAVA_API_REGEX =
+  /\b(Predicate|Consumer|Function|Supplier|BiFunction|UnaryOperator|BinaryOperator|Runnable|Callable|Comparator|CompletableFuture|ExecutorService|ReentrantLock|AtomicInteger|ConcurrentHashMap|AutoCloseable|@FunctionalInterface)\b/g;
 
 function renderTextWithKeywords(
   text: string,
@@ -19,9 +21,9 @@ function renderTextWithKeywords(
   let match: RegExpExecArray | null;
 
   // Reset regex index
-  JAVA_KEYWORD_REGEX.lastIndex = 0;
+  PLAIN_TEXT_JAVA_API_REGEX.lastIndex = 0;
 
-  while ((match = JAVA_KEYWORD_REGEX.exec(text)) !== null) {
+  while ((match = PLAIN_TEXT_JAVA_API_REGEX.exec(text)) !== null) {
     const matchText = match[0];
     const matchIndex = match.index;
 
@@ -30,7 +32,7 @@ function renderTextWithKeywords(
       parts.push(text.substring(lastIndex, matchIndex));
     }
 
-    // Append clickable keyword span
+    // Append clickable keyword span for explicit Java API types
     parts.push(
       <span
         key={`${matchText}-${matchIndex}`}
