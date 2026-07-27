@@ -2,13 +2,11 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import React, { useState } from "react";
 import { Copy, Check, Terminal, BookOpen } from "lucide-react";
-import { lookupJavadoc, type JavadocEntry } from "@/lib/javadoc-db";
+import { lookupJavadoc, isKnownJavadocKey, type JavadocEntry } from "@/lib/javadoc-db";
 import { JavadocModal } from "@/components/JavadocModal";
 
-// Only match explicit, non-ambiguous Java API interfaces, annotations & specific multi-word types in plain text prose.
-// Common lowercase keywords (for, class, if, do, this, var, try, etc.) are ONLY rendered as chips when formatted as code (`for`, `class`).
-const PLAIN_TEXT_JAVA_API_REGEX =
-  /\b(Predicate|Consumer|Function|Supplier|BiFunction|UnaryOperator|BinaryOperator|Runnable|Callable|Comparator|CompletableFuture|ExecutorService|ReentrantLock|AtomicInteger|ConcurrentHashMap|AutoCloseable|@FunctionalInterface)\b/g;
+const JAVA_KEYWORD_REGEX =
+  /\b(Predicate|Consumer|Function|Supplier|BiFunction|UnaryOperator|BinaryOperator|Runnable|Callable|Comparator|Stream|Optional|List|ArrayList|Map|HashMap|Set|HashSet|Queue|Deque|AutoCloseable|Closeable|Thread|ExecutorService|Future|CompletableFuture|ReentrantLock|AtomicInteger|if|else|switch|case|for|while|do|break|continue|return|try|catch|finally|throw|throws|class|interface|enum|record|extends|implements|super|this|instanceof|public|private|protected|static|final|synchronized|volatile|transient|var|void|int|long|boolean|double|float|yield|sealed|permits|@FunctionalInterface)\b/g;
 
 function renderTextWithKeywords(
   text: string,
@@ -21,18 +19,23 @@ function renderTextWithKeywords(
   let match: RegExpExecArray | null;
 
   // Reset regex index
-  PLAIN_TEXT_JAVA_API_REGEX.lastIndex = 0;
+  JAVA_KEYWORD_REGEX.lastIndex = 0;
 
-  while ((match = PLAIN_TEXT_JAVA_API_REGEX.exec(text)) !== null) {
+  while ((match = JAVA_KEYWORD_REGEX.exec(text)) !== null) {
     const matchText = match[0];
     const matchIndex = match.index;
+
+    // ONLY highlight if it is a known, registered Javadoc keyword!
+    if (!isKnownJavadocKey(matchText)) {
+      continue;
+    }
 
     // Append preceding plain text
     if (matchIndex > lastIndex) {
       parts.push(text.substring(lastIndex, matchIndex));
     }
 
-    // Append clickable keyword span for explicit Java API types
+    // Append clickable keyword span
     parts.push(
       <span
         key={`${matchText}-${matchIndex}`}
@@ -40,11 +43,11 @@ function renderTextWithKeywords(
           e.stopPropagation();
           onWordClick(matchText);
         }}
-        className="font-mono text-[12px] font-bold px-1 py-0.5 rounded bg-primary/10 text-primary dark:bg-primary/25 dark:text-primary-foreground border border-primary/20 hover:bg-primary/20 hover:scale-105 transition-all cursor-pointer inline-flex items-center gap-0.5 mx-0.5 shadow-2xs group"
+        className="font-mono text-[12px] font-bold px-1 py-0.5 rounded bg-blue-100/80 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-300 dark:border-blue-800 hover:bg-blue-200 dark:hover:bg-blue-900 hover:scale-105 transition-all cursor-pointer inline-flex items-center gap-0.5 mx-0.5 shadow-2xs group"
         title={`Click for Javadoc: ${matchText}`}
       >
         <span>{matchText}</span>
-        <BookOpen className="h-2.5 w-2.5 opacity-60 group-hover:opacity-100 shrink-0 text-primary" />
+        <BookOpen className="h-2.5 w-2.5 opacity-70 group-hover:opacity-100 shrink-0 text-blue-600 dark:text-blue-400" />
       </span>,
     );
 
@@ -75,7 +78,9 @@ export function Markdown({ children }: { children: string }) {
 
   const handleWordClick = (word: string) => {
     const entry = lookupJavadoc(word);
-    setSelectedEntry(entry);
+    if (entry) {
+      setSelectedEntry(entry);
+    }
   };
 
   return (
@@ -176,16 +181,30 @@ export function Markdown({ children }: { children: string }) {
               return <CodeBlock language={match?.[1] || "text"} value={codeString} />;
             }
 
+            // ONLY make inline code clickable if it exists in the Javadoc registry!
+            const javadocEntry = lookupJavadoc(codeString);
+            if (javadocEntry) {
+              return (
+                <button
+                  type="button"
+                  onClick={() => setSelectedEntry(javadocEntry)}
+                  className="inline-flex items-center gap-1 font-mono text-[12px] font-bold px-2 py-0.5 my-0.5 rounded-md border border-blue-300 dark:border-blue-800 bg-blue-100/80 text-blue-700 dark:bg-blue-950 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900 hover:scale-[1.03] transition-all cursor-pointer group shadow-2xs"
+                  title={`Click for Javadoc: ${codeString}`}
+                >
+                  <span>{children}</span>
+                  <BookOpen className="h-3 w-3 opacity-70 group-hover:opacity-100 shrink-0 text-blue-600 dark:text-blue-400" />
+                </button>
+              );
+            }
+
+            // Render standard inline code if not a registered Javadoc key
             return (
-              <button
-                type="button"
-                onClick={() => handleWordClick(codeString)}
-                className="inline-flex items-center gap-1 font-mono text-[12px] font-semibold px-2 py-0.5 my-0.5 rounded-md border border-primary/30 bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground hover:bg-primary/20 hover:scale-[1.03] transition-all cursor-pointer group shadow-2xs"
-                title="Click to view Javadoc & Keyword specification"
+              <code
+                className="font-mono text-[12px] px-1.5 py-0.5 rounded border border-border bg-muted/60 text-foreground"
+                {...props}
               >
-                <span>{children}</span>
-                <BookOpen className="h-3 w-3 opacity-60 group-hover:opacity-100 shrink-0 text-primary" />
-              </button>
+                {children}
+              </code>
             );
           },
         }}

@@ -33,13 +33,13 @@ export function JavadocModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm animate-in fade-in duration-200">
       <div
-        className="relative w-full max-w-2xl max-h-[88vh] overflow-y-auto rounded-2xl border border-blue-200 dark:border-blue-900/80 bg-card p-6 shadow-2xl text-foreground"
+        className="relative w-full max-w-2xl max-h-[88vh] overflow-y-auto rounded-2xl border border-blue-200 dark:border-blue-900/80 bg-card p-6 shadow-2xl text-foreground scrollbar-thin"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex items-start justify-between border-b border-blue-100 dark:border-blue-900/60 pb-4 mb-4">
+        {/* Sticky Header with Stable Close Button */}
+        <div className="sticky top-0 z-20 bg-card/95 backdrop-blur-md pb-4 mb-4 border-b border-blue-100 dark:border-blue-900/60 -mx-6 px-6 -mt-6 pt-6 flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold uppercase tracking-wider bg-blue-100 text-blue-700 border border-blue-300 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800">
@@ -51,20 +51,23 @@ export function JavadocModal({
                 </span>
               )}
             </div>
-            <h2 className="text-2xl font-extrabold text-blue-600 dark:text-blue-400 mt-2 font-mono flex items-center gap-2">
+            <h2 className="text-2xl font-extrabold text-blue-600 dark:text-blue-400 mt-1.5 font-mono flex items-center gap-2">
               <BookOpen className="h-6 w-6 text-blue-600 dark:text-blue-400 shrink-0" />
               {entry.name}
             </h2>
             {entry.package && (
-              <p className="text-xs text-blue-600/90 dark:text-blue-300/90 font-mono mt-1">
+              <p className="text-xs text-blue-600/90 dark:text-blue-300/90 font-mono mt-0.5">
                 Package:{" "}
                 <span className="font-bold text-blue-700 dark:text-blue-200">{entry.package}</span>
               </p>
             )}
           </div>
+
+          {/* Stable Fixed Close Button */}
           <button
             onClick={onClose}
-            className="rounded-full p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950 transition-colors"
+            className="rounded-full p-2 text-blue-600 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-950 border border-blue-200 dark:border-blue-800/80 transition-colors shrink-0 shadow-xs cursor-pointer"
+            title="Close Javadoc (Esc)"
           >
             <X className="h-5 w-5" />
           </button>
@@ -83,7 +86,7 @@ export function JavadocModal({
           <div className="rounded-xl bg-blue-50/80 dark:bg-blue-950/40 p-4 border border-blue-200 dark:border-blue-800/80">
             <h3 className="text-xs font-extrabold uppercase tracking-wider text-blue-700 dark:text-blue-300 mb-1.5 flex items-center gap-1.5">
               <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              Official Javadoc Specification & Deep-Dive
+              Official Javadoc Specification
             </h3>
             <p className="text-blue-950 dark:text-blue-100 leading-relaxed font-medium mb-2">
               {entry.summary}
@@ -187,7 +190,7 @@ export function JavadocModal({
               </h3>
               <button
                 onClick={handleCopyCode}
-                className="flex items-center gap-1 text-xs text-blue-700 dark:text-blue-300 hover:text-blue-900 hover:bg-blue-100 dark:hover:bg-blue-950 transition-colors px-2.5 py-1 rounded-md bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800"
+                className="flex items-center gap-1 text-xs text-blue-700 dark:text-blue-300 hover:text-blue-900 hover:bg-blue-100 dark:hover:bg-blue-950 transition-colors px-2.5 py-1 rounded-md bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 cursor-pointer"
               >
                 {copied ? (
                   <>
