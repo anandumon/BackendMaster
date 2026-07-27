@@ -1,0 +1,64 @@
+name: Production Release & Deployment (MAIN)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  production-deploy:
+    name: Build & Deploy to Production
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Strict Production Verification
+        run: |
+          npm run typecheck
+          npm run lint
+
+      - name: Build Application (Production)
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+          SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+
+      - name: Archive Production Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-build-artifact
+          path: .output
+          retention-days: 90
+
+      - name: Deploy to Production Environment
+        run: |
+          echo "Deploying Production build to live Production servers..."
+
+      - name: Create Automatic Git Release Tag
+        uses: softprops/action-gh-release@v1
+        if: success()
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Production Release v1.0.${{ github.run_number }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
