@@ -106,7 +106,7 @@ export const Route = createFileRoute("/api/lesson")({
           "google/gemma-2-9b-it:free",
           "qwen/qwen-2.5-coder-32b-instruct:free",
           "mistralai/mistral-7b-instruct:free",
-          "nvidia/nemotron-3-super:free",
+          "deepseek/deepseek-r1-distill-llama-70b:free",
         ];
 
         let lastErrorText = "";

@@ -111,7 +111,7 @@ export const Route = createFileRoute("/api/extract")({
             Authorization: `Bearer ${key}`,
           },
           body: JSON.stringify({
-            model: "nvidia/nemotron-3-ultra-550b-a55b:free",
+            model: "meta-llama/llama-3.3-70b-instruct:free",
             messages: [
               { role: "system", content: SYSTEM },
               {
