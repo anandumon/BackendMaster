@@ -5,9 +5,14 @@
   "outputDirectory": ".output/public",
   "installCommand": "npm install",
   "cleanUrls": true,
+  "functions": {
+    "src/routes/api/**/*": {
+      "maxDuration": 60
+    }
+  },
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ]

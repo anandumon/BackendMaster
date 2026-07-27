@@ -102,13 +102,11 @@ export const Route = createFileRoute("/api/lesson")({
         }
 
         const MODELS = [
-          "nvidia/nemotron-3-ultra-550b-a55b:free",
-          "poolside/laguna-m.1:free",
+          "meta-llama/llama-3.3-70b-instruct:free",
+          "google/gemma-2-9b-it:free",
+          "qwen/qwen-2.5-coder-32b-instruct:free",
+          "mistralai/mistral-7b-instruct:free",
           "nvidia/nemotron-3-super:free",
-          "cohere/north-mini-code:free",
-          "poolside/laguna-xs-2.1:free",
-          "poolside/laguna-s-2.1:free",
-          "openai/gpt-oss-20b:free",
         ];
 
         let lastErrorText = "";
@@ -116,12 +114,16 @@ export const Route = createFileRoute("/api/lesson")({
 
         for (const model of MODELS) {
           try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 9000);
+
             const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${key}`,
               },
+              signal: controller.signal,
               body: JSON.stringify({
                 model,
                 messages: [
@@ -131,6 +133,8 @@ export const Route = createFileRoute("/api/lesson")({
                 response_format: { type: "json_object" },
               }),
             });
+
+            clearTimeout(timeoutId);
 
             if (!res.ok) {
               lastStatus = res.status;

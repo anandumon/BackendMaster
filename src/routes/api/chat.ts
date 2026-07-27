@@ -24,18 +24,27 @@ export const Route = createFileRoute("/api/chat")({
           }Explain clearly, use analogies, code snippets in fenced markdown blocks, and offer to compare approaches, generate examples, quizzes, or explain like they're five when asked. Keep answers focused and structured.`,
         };
 
-        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${key}`,
-          },
-          body: JSON.stringify({
-            model: "nvidia/nemotron-3-ultra-550b-a55b:free",
-            messages: [system, ...body.messages],
-            stream: false,
-          }),
-        });
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 9000);
+
+        let res: Response;
+        try {
+          res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${key}`,
+            },
+            signal: controller.signal,
+            body: JSON.stringify({
+              model: "meta-llama/llama-3.3-70b-instruct:free",
+              messages: [system, ...body.messages],
+              stream: false,
+            }),
+          });
+        } finally {
+          clearTimeout(timeoutId);
+        }
 
         if (!res.ok) {
           const errText = await res.text();
