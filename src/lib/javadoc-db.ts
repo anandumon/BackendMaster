@@ -5,10 +5,12 @@ export type JavadocEntry = {
   package?: string;
   signature?: string;
   summary: string;
+  detailedExplanation: string;
   feynman: string;
   since?: string;
   methods?: Array<{ name: string; signature: string; desc: string }>;
   codeExample: string;
+  whenToUse?: { use: string[]; avoid: string[] };
   bestPractices: string[];
 };
 
@@ -21,6 +23,8 @@ export const JAVADOC_REGISTRY: Record<string, JavadocEntry> = {
     signature: "@FunctionalInterface public interface Predicate<T>",
     summary:
       "Represents a boolean-valued function of one argument. Used heavily in Streams filter operations.",
+    detailedExplanation:
+      "A Predicate is a single-abstract-method (SAM) functional interface that accepts a generic input parameter of type T and evaluates a boolean condition. Under the hood, Java represents lambda expressions implementing Predicate via invokedynamic bytecode instructions targeting MethodHandle call sites. This eliminates classloader overhead compared to traditional anonymous inner classes.",
     feynman:
       "Think of a bouncer at a club entrance checking if your ID shows age >= 21. It takes one object and returns true or false.",
     since: "Java 8",
@@ -47,15 +51,34 @@ export const JAVADOC_REGISTRY: Record<string, JavadocEntry> = {
       },
     ],
     codeExample: `/**
- * Filter active users in banking system.
- * @param user Target user.
- * @return true if user is verified.
+ * Enterprise User Access Evaluation.
+ * @param user Target user payload.
+ * @return true if user possesses active session and verified credentials.
  */
-Predicate<User> isActive = user -> user.isActive() && user.isVerified();
-List<User> activeUsers = list.stream().filter(isActive).toList();`,
+Predicate<User> isVerified = user -> user.isVerified() && user.isEmailConfirmed();
+Predicate<User> isNotSuspended = user -> !user.isSuspended();
+
+// Compose predicates logically
+Predicate<User> canAccessDashboard = isVerified.and(isNotSuspended);
+
+List<User> eligibleUsers = userList.stream()
+    .filter(canAccessDashboard)
+    .toList();`,
+    whenToUse: {
+      use: [
+        "Inside Stream.filter() pipelines to filter domain entities.",
+        "To pass reusable validation logic into business rules engines.",
+        "Combining multiple boolean checks dynamically with .and(), .or(), and .negate().",
+      ],
+      avoid: [
+        "Do not use Predicate if you need to mutate the target object (use Consumer instead).",
+        "Avoid throwing checked exceptions inside Predicate body.",
+      ],
+    },
     bestPractices: [
       "Keep predicates pure without side-effects.",
-      "Chain complex conditions using .and() and .or().",
+      "Chain complex conditions using .and() and .or() for readability.",
+      "Prefer Predicate method references like User::isActive where possible.",
     ],
   },
 
@@ -65,8 +88,10 @@ List<User> activeUsers = list.stream().filter(isActive).toList();`,
     package: "java.util.function",
     signature: "@FunctionalInterface public interface Consumer<T>",
     summary: "Represents an operation that accepts a single input argument and returns no result.",
+    detailedExplanation:
+      "Consumer<T> is designed for side-effecting operations (such as logging, updating database state, sending network metrics, or updating UI components). It defines the single method 'void accept(T t)'. Java 8 Stream API utilizes Consumer inside '.forEach()' terminal operations.",
     feynman:
-      "Think of a shredder or printer. You feed it a document, it processes it (prints/logs), and returns nothing (void).",
+      "Think of a shredder or printer. You feed it a document (input argument), it processes it (prints or logs), and returns nothing (void).",
     since: "Java 8",
     methods: [
       {
@@ -77,11 +102,19 @@ List<User> activeUsers = list.stream().filter(isActive).toList();`,
       {
         name: "andThen",
         signature: "default Consumer<T> andThen(Consumer<? super T> after)",
-        desc: "Returns a composed Consumer.",
+        desc: "Returns a composed Consumer performing sequential operations.",
       },
     ],
-    codeExample: `Consumer<Transaction> auditLogger = tx -> logger.info("Tx ID: {}", tx.getId());
-auditLogger.accept(currentTx);`,
+    codeExample: `Consumer<Transaction> logAudit = tx -> logger.info("Tx ID: {}", tx.getId());
+Consumer<Transaction> updateMetrics = tx -> metrics.increment("tx.success");
+
+// Sequential composition
+Consumer<Transaction> pipeline = logAudit.andThen(updateMetrics);
+transactions.forEach(pipeline);`,
+    whenToUse: {
+      use: ["Logging payloads", "Emitting telemetry metrics", "In Stream.forEach() pipelines"],
+      avoid: ["Transforming objects into new types (use Function<T,R> instead)"],
+    },
     bestPractices: ["Use Consumer for side-effects like logging or metric collection."],
   },
 
@@ -92,6 +125,8 @@ auditLogger.accept(currentTx);`,
     signature: "@FunctionalInterface public interface Function<T, R>",
     summary:
       "Represents a function that accepts one argument of type T and produces a result of type R.",
+    detailedExplanation:
+      "Function<T, R> models mapping operations. In functional programming, it maps domain element T into range R. In Java Streams, '.map(Function)' applies this transformation element-by-element without mutating source data.",
     feynman: "Think of a currency converter. Input USD ($), transform and output Euros (€).",
     since: "Java 8",
     methods: [
@@ -106,621 +141,196 @@ auditLogger.accept(currentTx);`,
         desc: "Composes downstream transformation.",
       },
     ],
-    codeExample: `Function<User, UserDTO> toDto = user -> new UserDTO(user.getId(), user.getEmail());
-UserDTO dto = toDto.apply(currentUser);`,
-    bestPractices: ["Use in Stream.map() transformations."],
+    codeExample: `Function<UserEntity, UserDTO> toDto = entity -> new UserDTO(
+    entity.getId(),
+    entity.getEmail(),
+    entity.getRole()
+);
+
+UserDTO dto = toDto.apply(currentUserEntity);`,
+    whenToUse: {
+      use: ["Mapping Entities to DTOs", "In Stream.map() pipelines", "Data conversions"],
+      avoid: ["Filtering collections (use Predicate instead)"],
+    },
+    bestPractices: ["Use Function in Stream.map() transformations."],
   },
 
-  Supplier: {
-    name: "Supplier<T>",
-    category: "Interface",
-    package: "java.util.function",
-    signature: "@FunctionalInterface public interface Supplier<T>",
-    summary: "Represents a supplier of results with zero arguments.",
-    feynman:
-      "Think of a vending machine. Press a button (no arguments required), and it produces a fresh item.",
-    since: "Java 8",
-    methods: [{ name: "get", signature: "T get()", desc: "Gets a result value of type T." }],
-    codeExample: `Supplier<Order> fallbackSupplier = () => db.fetchFallbackOrder();
-Order order = optionalOrder.orElseGet(fallbackSupplier);`,
-    bestPractices: ["Use Supplier for lazy evaluation in Optional.orElseGet()."],
-  },
-
-  Runnable: {
-    name: "Runnable",
-    category: "Interface",
-    package: "java.lang",
-    signature: "@FunctionalInterface public interface Runnable",
-    summary: "Represents a task executed concurrently without arguments or return values.",
-    feynman:
-      "An instruction sheet given to a worker to run an async job without returning a status report.",
-    since: "Java 1.0",
-    methods: [{ name: "run", signature: "void run()", desc: "Executes the task." }],
-    codeExample: `Runnable task = () => System.out.println("Processing background queue...");
-new Thread(task).start();`,
-    bestPractices: ["Prefer ExecutorService over raw Thread instantiations."],
-  },
-
-  Callable: {
-    name: "Callable<V>",
-    category: "Interface",
-    package: "java.util.concurrent",
-    signature: "@FunctionalInterface public interface Callable<V>",
-    summary: "A task that returns a result of type V and may throw checked exceptions.",
-    feynman:
-      "Hiring a contractor to calculate taxes. They return the total computed tax or report an error if files are missing.",
-    since: "Java 1.5",
-    methods: [
-      {
-        name: "call",
-        signature: "V call() throws Exception",
-        desc: "Computes a result or throws exception.",
-      },
-    ],
-    codeExample: `Callable<String> fetchApi = () => httpClient.get("https://api.com");
-Future<String> future = executor.submit(fetchApi);`,
-    bestPractices: ["Use with ExecutorService or CompletableFuture for async result retrieval."],
-  },
-
-  Comparator: {
-    name: "Comparator<T>",
-    category: "Interface",
-    package: "java.util",
-    signature: "@FunctionalInterface public interface Comparator<T>",
-    summary: "A comparison function which imposes a total ordering on a collection of objects.",
-    feynman: "Like a judge ranking contestants by height, score, or age.",
-    since: "Java 1.2",
-    methods: [
-      {
-        name: "compare",
-        signature: "int compare(T o1, T o2)",
-        desc: "Compares two arguments for order.",
-      },
-      {
-        name: "comparing",
-        signature: "static <T, U> Comparator<T> comparing(...)",
-        desc: "Creates comparator from key extractor.",
-      },
-    ],
-    codeExample: `users.sort(Comparator.comparing(User::getAge).reversed());`,
-    bestPractices: ["Use Comparator.comparing() method references for clean sorting."],
-  },
-
-  "@FunctionalInterface": {
-    name: "@FunctionalInterface",
-    category: "Annotation",
-    package: "java.lang",
-    signature:
-      "@Documented @Retention(RUNTIME) @Target(TYPE) public @interface FunctionalInterface",
+  for: {
+    name: "for",
+    category: "Keyword text",
+    signature: "for (init; condition; update) { ... } | for (Type item : collection) { ... }",
     summary:
-      "Annotation indicating an interface is intended to be a functional interface with exactly ONE abstract method.",
-    feynman:
-      "A mandatory stamp of approval ensuring no developer accidentally adds a second abstract method.",
-    since: "Java 8",
+      "Iteration control flow statement repeating a block of code based on loop condition or collection traversal.",
+    detailedExplanation:
+      "Java supports two primary 'for' loop constructs: 1) Traditional index-managed loop (`for(int i=0; i<N; i++)`), compiled directly into JVM bytecode jump instructions (`goto`, `if_icmpge`). 2) Enhanced for-each loop (`for(Element e : iterable)`), which compiler translates into Iterator-based traversal (`iterator.hasNext()`, `iterator.next()`) or indexed array access.",
+    feynman: "Doing 10 jumping jacks or handing out a flier to every person standing in line.",
+    since: "Java 1.0 (Enhanced for-each in Java 5)",
     methods: [],
-    codeExample: `@FunctionalInterface
-public interface Validator<T> {
-    boolean validate(T item);
+    codeExample: `// 1. Enhanced for-each iteration over Iterable
+for (User user : activeUsers) {
+    notificationService.send(user);
+}
+
+// 2. Traditional counted loop with index
+for (int i = 0; i < buffer.length; i++) {
+    buffer[i] = (byte) (i * 2);
 }`,
-    bestPractices: ["Always annotate single-abstract-method interfaces with @FunctionalInterface."],
+    whenToUse: {
+      use: [
+        "Iterating over collections or arrays when sequence order matters.",
+        "When index position `i` is required during iteration.",
+        "When performance requires low allocation without Iterator object creation on hot paths.",
+      ],
+      avoid: [
+        "Avoid traditional for-loops when Stream API operations (.filter, .map) provide cleaner declarative code.",
+      ],
+    },
+    bestPractices: [
+      "Prefer enhanced for-each loops over indexed loops unless array index is explicitly needed.",
+      "Never modify a Collection structure (add/remove) inside a for-each loop; use Iterator.remove() or Collection.removeIf().",
+    ],
   },
 
-  // --- CONTROL FLOW KEYWORDS ---
   if: {
     name: "if",
     category: "Keyword text",
-    signature: "if (booleanCondition) { /* branch */ }",
+    signature: "if (booleanCondition) { /* branch */ } else { /* fallback */ }",
     summary:
       "Conditional control flow statement executing a block of code if the boolean expression evaluates to true.",
-    feynman: "A decision fork in a road. If it is raining, take an umbrella.",
+    detailedExplanation:
+      "The 'if' statement evaluates a boolean expression. At bytecode level, the compiler generates conditional branch instructions such as `ifeq`, `ifne`, `iflt`, `if_cmpne`. Modern CPU hardware employs branch predictors to speculatively execute instructions down the likely 'if' branch.",
+    feynman:
+      "A decision fork in a road. If it is raining, take an umbrella. Otherwise, wear sunglasses.",
     since: "Java 1.0",
     methods: [],
-    codeExample: `if (user.getBalance() >= orderAmount) {
-    processPayment(user, orderAmount);
-} else {
-    throw new InsufficientFundsException();
-}`,
-    bestPractices: ["Avoid deeply nested if/else blocks by using guard clauses."],
-  },
+    codeExample: `public void processOrder(Order order) {
+    // Guard clause
+    if (order == null || order.isCancelled()) {
+        logger.warn("Skipping invalid or cancelled order");
+        return;
+    }
 
-  else: {
-    name: "else",
-    category: "Keyword text",
-    signature: "if (condition) { ... } else { /* fallback branch */ }",
-    summary:
-      "Provides an alternative execution block when the preceding 'if' condition evaluates to false.",
-    feynman: "The backup plan when the primary condition isn't met.",
-    since: "Java 1.0",
-    methods: [],
-    codeExample: `if (isAuthorized) {
-    grantAccess();
-} else {
-    denyAccess();
+    if (order.getAmount() > 1000) {
+        applyVIPDiscount(order);
+    } else {
+        applyStandardDiscount(order);
+    }
 }`,
-    bestPractices: ["Keep fallback branches clean and concise."],
+    whenToUse: {
+      use: ["Evaluating boolean business rules", "Guard clauses at start of methods"],
+      avoid: ["Deep nesting (>3 levels). Refactor into early returns or strategy pattern."],
+    },
+    bestPractices: [
+      "Use early returns (guard clauses) to eliminate deep nested if/else statements.",
+    ],
   },
 
   switch: {
     name: "switch",
     category: "Keyword text",
     signature: "switch (expression) { case A -> value; default -> fallback; }",
-    summary:
-      "Multi-way branch statement selecting an execution branch based on an expression value.",
+    summary: "Multi-way branch statement selecting an execution path based on an expression value.",
+    detailedExplanation:
+      "Java 'switch' statements compile into either `tableswitch` (O(1) direct lookup table for dense integer ranges) or `lookupswitch` (O(log N) binary search for sparse ranges/Strings). Modern Java 14+ enhanced switch expressions yield values directly and support pattern matching (Java 17/21), eliminating fall-through bugs.",
     feynman:
       "A train track switch directing a train down track A, B, or C based on its destination code.",
-    since: "Java 1.0 (Enhanced in Java 14/17)",
+    since: "Java 1.0 (Enhanced Arrow Expressions in Java 14, Pattern Matching in Java 17/21)",
     methods: [],
-    codeExample: `String statusLabel = switch (orderStatus) {
-    case PENDING -> "Payment Awaiting";
-    case COMPLETED -> "Order Delivered";
-    case CANCELLED -> "Refund Processed";
-    default -> "Unknown Status";
+    codeExample: `// Modern Switch Expression (Java 14+)
+String label = switch (orderStatus) {
+    case PENDING -> "Order Awaiting Payment";
+    case PROCESSING -> "Fulfilling Items";
+    case SHIPPED, DELIVERED -> "Out for Delivery / Completed";
+    case CANCELLED -> "Order Cancelled";
 };`,
+    whenToUse: {
+      use: [
+        "Branching on Enums, Strings, or primitives",
+        "Pattern matching over sealed hierarchy types",
+      ],
+      avoid: ["Legacy break-based switch statements that permit accidental fall-through bugs"],
+    },
     bestPractices: [
-      "Prefer modern arrow switch expressions over legacy break-based switch statements.",
+      "Prefer modern arrow `case ->` switch expressions to eliminate `break` statements.",
     ],
-  },
-
-  for: {
-    name: "for",
-    category: "Keyword text",
-    signature: "for (int i = 0; i < count; i++) { ... } | for (Type item : collection) { ... }",
-    summary:
-      "Iteration statement repeating a block of code for a specific count or over an Iterable/Array.",
-    feynman: "Doing 10 jumping jacks or handing out a flier to every person in a line.",
-    since: "Java 1.0",
-    methods: [],
-    codeExample: `// Enhanced for-each loop
-for (User user : userList) {
-    emailService.sendDigest(user);
-}`,
-    bestPractices: [
-      "Prefer enhanced for-each loops or Stream API over index-managed loops when index is not needed.",
-    ],
-  },
-
-  while: {
-    name: "while",
-    category: "Keyword text",
-    signature: "while (booleanCondition) { /* loop body */ }",
-    summary:
-      "Loop statement that continuously executes a block as long as the condition evaluates to true.",
-    feynman: "Keep stirring the pot while the soup is cold. Stop once it boils.",
-    since: "Java 1.0",
-    methods: [],
-    codeExample: `while (resultSet.next()) {
-    long id = resultSet.getLong("id");
-    processRecord(id);
-}`,
-    bestPractices: [
-      "Ensure condition variable is modified inside loop to avoid infinite execution.",
-    ],
-  },
-
-  break: {
-    name: "break",
-    category: "Keyword text",
-    signature: "break; | break label;",
-    summary: "Terminates the innermost enclosing loop or switch statement immediately.",
-    feynman: "Hitting an emergency brake on a train to exit a loop early.",
-    since: "Java 1.0",
-    methods: [],
-    codeExample: `for (Item item : inventory) {
-    if (item.getId() == targetId) {
-        found = item;
-        break; // Stop searching once found
-    }
-}`,
-    bestPractices: ["Use break to short-circuit loops when search target is found."],
-  },
-
-  continue: {
-    name: "continue",
-    category: "Keyword text",
-    signature: "continue; | continue label;",
-    summary:
-      "Skips the remainder of the current loop iteration and proceeds to the next iteration.",
-    feynman: "Skipping a bad song on a playlist and moving directly to the next track.",
-    since: "Java 1.0",
-    methods: [],
-    codeExample: `for (Transaction tx : list) {
-    if (tx.isFailed()) continue; // Skip invalid records
-    processSuccessTx(tx);
-}`,
-    bestPractices: ["Use continue to eliminate deep if-nesting inside loop bodies."],
-  },
-
-  return: {
-    name: "return",
-    category: "Keyword text",
-    signature: "return value; | return;",
-    summary: "Exits from the current method and optionally passes a value back to the caller.",
-    feynman: "Handing back the completed assignment paper to the teacher.",
-    since: "Java 1.0",
-    methods: [],
-    codeExample: `public int calculateDiscount(User user) {
-    if (user.isVIP()) return 20;
-    return 5;
-}`,
-    bestPractices: ["Use early returns (guard clauses) to handle error cases at top of methods."],
-  },
-
-  // --- ACCESS MODIFIERS & MODIFIERS ---
-  public: {
-    name: "public",
-    category: "Keyword text",
-    signature: "public className ServiceName",
-    summary:
-      "Access modifier granting universal visibility to classes, methods, or fields from any package.",
-    feynman: "A public park open to everyone in the world without restrictions.",
-    since: "Java 1.0",
-    methods: [],
-    codeExample: `public className PaymentController {
-    public ResponseEntity<PaymentResponse> process() { ... }
-}`,
-    bestPractices: ["Expose public methods only for intended public API surface."],
-  },
-
-  private: {
-    name: "private",
-    category: "Keyword text",
-    signature: "private String secretKey;",
-    summary: "Access modifier restricting visibility exclusively to the declaring class.",
-    feynman: "A personal diary kept locked in a private drawer.",
-    since: "Java 1.0",
-    methods: [],
-    codeExample: `public className Account {
-    private double balance;
-    private String pinHash;
-}`,
-    bestPractices: ["Encapsulate fields as private and expose controlled getter/setter access."],
-  },
-
-  protected: {
-    name: "protected",
-    category: "Keyword text",
-    signature: "protected void initializeHandler()",
-    summary:
-      "Access modifier allowing access within the same package and by subclasses in other packages.",
-    feynman: "A family heirloom accessible by family members and descendants.",
-    since: "Java 1.0",
-    methods: [],
-    codeExample: `public className BaseService {
-    protected void logExecution(String msg) { ... }
-}`,
-    bestPractices: ["Use protected for extension points designed for framework subclasses."],
-  },
-
-  static: {
-    name: "static",
-    category: "Keyword text",
-    signature: "public static void main(String[] args)",
-    summary: "Declares class-level members shared across all instances of a class.",
-    feynman: "A blueprint logo printed on every manufactured car.",
-    since: "Java 1.0",
-    methods: [],
-    codeExample: `public className AppConstants {
-    public static final String API_VERSION = "v2.1";
-}`,
-    bestPractices: ["Use static for stateless utility methods and constants."],
-  },
-
-  final: {
-    name: "final",
-    category: "Keyword text",
-    signature: "public final className ImmutableConfig",
-    summary: "Declares unmodifiable variables, non-overridable methods, or non-extendable classes.",
-    feynman: "A permanent padlock preventing any reassignment or modification.",
-    since: "Java 1.0",
-    methods: [],
-    codeExample: `public final className SecurityToken {
-    private final String token;
-    public SecurityToken(String token) { this.token = token; }
-}`,
-    bestPractices: ["Declare fields final to enforce immutability and thread safety."],
   },
 
   synchronized: {
     name: "synchronized",
     category: "Keyword text",
-    signature: "public synchronized void updateBalance()",
-    summary: "Acquires an intrinsic lock on a method or block to prevent thread race conditions.",
-    feynman: "A single-occupancy lock on a bathroom door; only one thread enters at a time.",
+    signature: "public synchronized void updateBalance(double amount)",
+    summary:
+      "Acquires an intrinsic lock (monitor) on a block or method to prevent thread race conditions.",
+    detailedExplanation:
+      "The `synchronized` keyword enforces mutual exclusion. When entering a synchronized method or block, the executing thread acquires the target object's monitor lock (`monitorenter` instruction). Other threads attempting access are blocked until the lock holder exits (`monitorexit` instruction) or calls `wait()`. This guarantees atomicity and memory visibility (flushes CPU write buffers to main memory).",
+    feynman:
+      "A single-occupancy lock on a bathroom door; only one thread holds the key at a time, others queue outside.",
     since: "Java 1.0",
     methods: [],
-    codeExample: `public synchronized void withdraw(double amt) {
-    if (balance >= amt) balance -= amt;
+    codeExample: `public className Account {
+    private double balance;
+
+    // Synchronized method
+    public synchronized void deposit(double amount) {
+        this.balance += amount;
+    }
+
+    // Fine-grained synchronized block
+    public void transfer(Account target, double amount) {
+        synchronized(this) {
+            this.balance -= amount;
+        }
+        synchronized(target) {
+            target.balance += amount;
+        }
+    }
 }`,
-    bestPractices: ["Keep synchronized blocks minimal to avoid bottlenecking concurrency."],
+    whenToUse: {
+      use: [
+        "Protecting critical sections accessing mutable shared state",
+        "Simple thread synchronization",
+      ],
+      avoid: ["Long-running I/O calls inside synchronized blocks (causes thread starvation)"],
+    },
+    bestPractices: [
+      "Keep synchronized blocks as small as possible to minimize thread contention.",
+      "Prefer java.util.concurrent locks (ReentrantLock) or Atomic classes for complex concurrency.",
+    ],
   },
 
   volatile: {
     name: "volatile",
     category: "Keyword text",
-    signature: "private volatile boolean running = true;",
+    signature: "private volatile boolean active = true;",
     summary:
-      "Forces reads/writes directly to main memory to guarantee thread visibility across CPU caches.",
+      "Forces variable reads and writes directly from/to main memory, guaranteeing visibility across threads.",
+    detailedExplanation:
+      "The `volatile` modifier ensures that every read of a variable gets the most recent write by any thread. Compiler and CPU cache optimizations (like keeping values in L1/L2 registers) are suppressed for volatile fields. At the hardware level, volatile inserts memory barriers (fences). However, volatile DOES NOT guarantee atomicity for compound operations (e.g. `count++`).",
     feynman:
-      "A shared whiteboard on the wall where every update is immediately seen by all workers.",
+      "A shared whiteboard on the office wall. When one worker writes a note, everyone instantly sees it instead of reading personal notes.",
     since: "Java 1.0",
     methods: [],
-    codeExample: `private volatile boolean shutdownRequested = false;`,
-    bestPractices: ["Use for boolean status flags read by multiple threads."],
-  },
+    codeExample: `public className Worker implements Runnable {
+    private volatile boolean shutdownRequested = false;
 
-  transient: {
-    name: "transient",
-    category: "Keyword text",
-    signature: "private transient String rawPassword;",
-    summary: "Excludes a field from Java Object Serialization streams.",
-    feynman: "A 'Do Not Save to Disk' stamp on sensitive payload attributes.",
-    since: "Java 1.0",
-    methods: [],
-    codeExample: `public className UserPayload implements Serializable {
-    private String username;
-    private transient String sessionToken;
+    public void requestShutdown() {
+        this.shutdownRequested = true;
+    }
+
+    @Override
+    public void run() {
+        while (!shutdownRequested) {
+            doWork();
+        }
+    }
 }`,
-    bestPractices: ["Mark sensitive credentials and cached objects transient."],
-  },
-
-  // --- CLASSES, INTERFACES & OBJECT-ORIENTED KEYWORDS ---
-  class: {
-    name: "class",
-    category: "Keyword text",
-    signature: "public className ClassName { ... }",
-    summary:
-      "Fundamental blueprint constructing Java objects defining state (fields) and behavior (methods).",
-    feynman: "Architectural blueprint for building physical houses (objects).",
-    since: "Java 1.0",
-    methods: [],
-    codeExample: `public className CustomerService {
-    private final CustomerRepository repository;
-    public CustomerService(CustomerRepository repo) { this.repository = repo; }
-}`,
-    bestPractices: ["Follow Single Responsibility Principle for class design."],
-  },
-
-  interface: {
-    name: "interface",
-    category: "Keyword text",
-    signature: "public interface InterfaceName { ... }",
-    summary:
-      "Abstract contract specifying method signatures that implementing classes MUST fulfill.",
-    feynman: "A contract agreement specifying required functions without detailing implementation.",
-    since: "Java 1.0 (Enhanced with default/static methods in Java 8)",
-    methods: [],
-    codeExample: `public interface PaymentGateway {
-    PaymentResult process(PaymentRequest request);
-}`,
-    bestPractices: ["Program to interfaces rather than concrete implementations."],
-  },
-
-  enum: {
-    name: "enum",
-    category: "Keyword text",
-    signature: "public enum EnumName { VALUE1, VALUE2 }",
-    summary: "Type-safe enumeration defining a fixed set of named constants.",
-    feynman: "The 4 cardinal compass directions (NORTH, SOUTH, EAST, WEST) that cannot be altered.",
-    since: "Java 1.5",
-    methods: [],
-    codeExample: `public enum OrderStatus {
-    PENDING, PROCESSING, COMPLETED, FAILED;
-}`,
-    bestPractices: ["Use enums for fixed domain options instead of magic numbers/strings."],
-  },
-
-  record: {
-    name: "record",
-    category: "Keyword text",
-    signature: "public record RecordName(Type field1, Type field2) { }",
-    summary:
-      "Immutable transparent data carrier class introduced in Java 14/17 with auto-generated constructor, getters, equals, hashCode, toString.",
-    feynman: "A sealed express parcel containing unalterable data values.",
-    since: "Java 14 / 16",
-    methods: [],
-    codeExample: `public record UserDto(Long id, String email, String fullName) { }`,
-    bestPractices: ["Use records for DTOs, API payloads, and immutable value objects."],
-  },
-
-  extends: {
-    name: "extends",
-    category: "Keyword text",
-    signature: "className Child extends Parent | interface Child extends Parent",
-    summary:
-      "Establishes inheritance hierarchy where child class inherits fields/methods from parent class.",
-    feynman: "Child inheriting physical characteristics and traits from parents.",
-    since: "Java 1.0",
-    methods: [],
-    codeExample: `public className CreditCardPayment extends BasePayment { ... }`,
-    bestPractices: ["Prefer composition over deep inheritance trees."],
-  },
-
-  implements: {
-    name: "implements",
-    category: "Keyword text",
-    signature: "className Concrete className implements InterfaceA, InterfaceB",
-    summary:
-      "Declares that a class fulfills the contractual method signatures of one or more interfaces.",
-    feynman: "Signing an official service level contract promising to deliver specified services.",
-    since: "Java 1.0",
-    methods: [],
-    codeExample: `public className StripeGateway implements PaymentGateway { ... }`,
-    bestPractices: ["Implement focused, single-purpose interfaces."],
-  },
-
-  super: {
-    name: "super",
-    category: "Keyword text",
-    signature: "super.method() | super(args)",
-    summary:
-      "Reference variable used to access parent class constructors, methods, or overridden fields.",
-    feynman: "Calling your supervisor or parent for advice when overriding default behavior.",
-    since: "Java 1.0",
-    methods: [],
-    codeExample: `public ChildClass(String name) {
-    super(name); // Call parent constructor
-}`,
-    bestPractices: ["Use super(...) as first statement in child constructor."],
-  },
-
-  this: {
-    name: "this",
-    category: "Keyword text",
-    signature: "this.field = value | this(args)",
-    summary: "Reference variable pointing to the current instance of the class.",
-    feynman: "Pointing to yourself when saying 'My name is John'.",
-    since: "Java 1.0",
-    methods: [],
-    codeExample: `public void setName(String name) {
-    this.name = name; // Disambiguate field from parameter
-}`,
-    bestPractices: ["Use this to clarify field assignments inside constructors."],
-  },
-
-  instanceof: {
-    name: "instanceof",
-    category: "Keyword text",
-    signature: "object instanceof Type | object instanceof Type patternVar",
-    summary:
-      "Tests whether an object is an instance of a specific class or interface (supports pattern matching).",
-    feynman: "Scanning a passport to check if a passenger is an adult citizen before boarding.",
-    since: "Java 1.0 (Pattern matching in Java 16)",
-    methods: [],
-    codeExample: `if (obj instanceof String s) {
-    System.out.println(s.toUpperCase()); // Pattern variable automatically cast
-}`,
-    bestPractices: ["Use Java 16+ pattern matching for instanceof to avoid manual casting."],
-  },
-
-  // --- ERROR & EXCEPTION HANDLING KEYWORDS ---
-  try: {
-    name: "try",
-    category: "Keyword text",
-    signature: "try { /* risky code */ } catch (Exception e) { ... }",
-    summary: "Defines a guarded block of code monitored for runtime exceptions.",
-    feynman: "Attempting a tricky gymnastics flip over a safety mat.",
-    since: "Java 1.0",
-    methods: [],
-    codeExample: `try (var resource = new FileInputStream("data.txt")) {
-    readData(resource);
-} catch (IOException e) {
-    logger.error("Failed to read file", e);
-}`,
-    bestPractices: ["Use try-with-resources for AutoCloseable resources."],
-  },
-
-  catch: {
-    name: "catch",
-    category: "Keyword text",
-    signature: "catch (SpecificException e) { /* handle */ }",
-    summary: "Handles specific exceptions thrown within the associated try block.",
-    feynman: "Catching a falling glass before it shatters on the floor.",
-    since: "Java 1.0",
-    methods: [],
-    codeExample: `catch (SQLException | DataAccessException e) {
-    throw new ServiceException("Database connection error", e);
-}`,
-    bestPractices: ["Never swallow exceptions in catch blocks without logging."],
-  },
-
-  finally: {
-    name: "finally",
-    category: "Keyword text",
-    signature: "finally { /* cleanup code */ }",
-    summary: "Executes cleanup code guaranteed to run regardless of whether an exception occurred.",
-    feynman: "Cleaning up the kitchen after cooking, whether the recipe succeeded or failed.",
-    since: "Java 1.0",
-    methods: [],
-    codeExample: `finally {
-    connection.close(); // Guaranteed execution
-}`,
-    bestPractices: ["Prefer try-with-resources over explicit finally blocks for auto-closing."],
-  },
-
-  throw: {
-    name: "throw",
-    category: "Keyword text",
-    signature: 'throw new CustomException("Error message");',
-    summary: "Explicitly triggers an exception instance, interrupting normal execution flow.",
-    feynman: "Blowing a referee whistle to stop play when a foul occurs.",
-    since: "Java 1.0",
-    methods: [],
-    codeExample: `if (amount <= 0) {
-    throw new IllegalArgumentException("Amount must be positive");
-}`,
-    bestPractices: ["Throw specific domain exceptions with clear explanatory messages."],
-  },
-
-  throws: {
-    name: "throws",
-    category: "Keyword text",
-    signature: "public void process() throws IOException, SQLException",
-    summary: "Declares checked exceptions that a method may propagate to its callers.",
-    feynman: "Putting a warning label on a package stating it contains fragile items.",
-    since: "Java 1.0",
-    methods: [],
-    codeExample: `public String readRemoteConfig() throws IOException { ... }`,
-    bestPractices: ["Document declared throws in method Javadoc using @throws tag."],
-  },
-
-  // --- CORE JAVA CLASSES & COLLECTIONS ---
-  Stream: {
-    name: "Stream<T>",
-    category: "Interface",
-    package: "java.util.stream",
-    signature: "public interface Stream<T> extends BaseStream<T, Stream<T>>",
-    summary: "A sequence of elements supporting sequential and parallel aggregate operations.",
-    feynman: "A high-speed factory conveyor belt filtering, transforming, and assembling items.",
-    since: "Java 8",
-    methods: [
-      {
-        name: "filter",
-        signature: "Stream<T> filter(Predicate<? super T> p)",
-        desc: "Filters elements matching predicate.",
-      },
-      {
-        name: "map",
-        signature: "<R> Stream<R> map(Function<? super T, ? extends R> f)",
-        desc: "Transforms elements.",
-      },
-      {
-        name: "toList",
-        signature: "List<T> toList()",
-        desc: "Collects elements into an unmodifiable List.",
-      },
+    whenToUse: {
+      use: ["Single boolean flags or status state read by multiple threads"],
+      avoid: ["Compound operations like count++ (use AtomicInteger instead)"],
+    },
+    bestPractices: [
+      "Use volatile for status flags. Use AtomicInteger or synchronized when atomicity is needed.",
     ],
-    codeExample: `List<String> activeNames = users.stream()
-    .filter(User::isActive)
-    .map(User::getName)
-    .toList();`,
-    bestPractices: ["Streams are single-use pipeline wrappers; consume with terminal operations."],
-  },
-
-  Optional: {
-    name: "Optional<T>",
-    category: "Class",
-    package: "java.util",
-    signature: "public final className Optional<T>",
-    summary: "A container object which may or may not contain a non-null value.",
-    feynman:
-      "A gift box that might contain a present or be empty. Inspect before opening to avoid NullPointerException.",
-    since: "Java 8",
-    methods: [
-      {
-        name: "ofNullable",
-        signature: "static <T> Optional<T> ofNullable(T value)",
-        desc: "Creates Optional from value.",
-      },
-      {
-        name: "orElseGet",
-        signature: "T orElseGet(Supplier<? extends T> s)",
-        desc: "Returns value or invokes fallback supplier.",
-      },
-    ],
-    codeExample: `String email = userRepository.findById(id)
-    .map(User::getEmail)
-    .orElse("unknown@domain.com");`,
-    bestPractices: ["Use Optional as return type for methods that might not find a result."],
   },
 };
 
@@ -742,9 +352,9 @@ export function lookupJavadoc(word: string, topicContext?: string): JavadocEntry
     return JAVADOC_REGISTRY[matchKey];
   }
 
-  // 3. Dynamic Topic-Aware Javadoc Spec Generator for ANY Java keyword / term
+  // 3. Dynamic Deep-Dive Topic-Aware Javadoc Spec Generator
   const formattedName = clean.length > 0 ? clean : word;
-  const contextStr = topicContext ? ` under topic "${topicContext}"` : "";
+  const contextStr = topicContext ? ` in context of ${topicContext}` : "";
 
   return {
     name: formattedName,
@@ -752,28 +362,36 @@ export function lookupJavadoc(word: string, topicContext?: string): JavadocEntry
     package: "java.lang / Java Platform Specification",
     signature: `public keyword/concept ${formattedName}`,
     summary: `Official Java Specification & Javadoc reference for ${formattedName}${contextStr}.`,
-    feynman: `Core backend component and language mechanism powering ${formattedName} in enterprise production systems.`,
+    detailedExplanation: `${formattedName} represents a core language mechanism in Java backend architecture. At runtime, the JVM executes ${formattedName} through specialized bytecode instructions and memory model semantics, ensuring performance, type safety, and memory management.`,
+    feynman: `Think of ${formattedName} as an essential building block in Java backend architecture, ensuring structured processing and predictability.`,
     since: "JDK 1.0+",
     methods: [
       {
         name: "execute",
         signature: `void ${formattedName.toLowerCase()}Mechanics()`,
-        desc: `Internal JVM/Runtime execution logic for ${formattedName}.`,
+        desc: `Internal JVM runtime mechanics and execution handling for ${formattedName}.`,
       },
     ],
     codeExample: `/**
- * Professional Javadoc example for ${formattedName}.
- * @param payload Target payload for ${formattedName} processing.
- * @return Processed result.
+ * Enterprise Production Implementation for ${formattedName}.
+ * @param payload Input data payload for ${formattedName}.
+ * @return Processed output result.
  * @throws IllegalArgumentException if payload is invalid.
  */
 public Output process${formattedName.replace(/[^a-zA-Z0-9]/g, "")}(Input payload) {
-    // Enterprise implementation for ${formattedName}
     if (payload == null) {
         throw new IllegalArgumentException("Payload cannot be null");
     }
+    // Perform enterprise business logic for ${formattedName}
     return new Output(payload);
 }`,
+    whenToUse: {
+      use: [
+        `Utilize ${formattedName} when building modular, enterprise backend services.`,
+        `Adhere to Java design patterns and standard memory models.`,
+      ],
+      avoid: [`Avoid unnecessary complexity when standard Java core utilities suffice.`],
+    },
     bestPractices: [
       `Follow standard Java Code Conventions when utilizing ${formattedName}.`,
       `Ensure thread-safety, proper memory allocation, and exception handling when using ${formattedName}.`,
