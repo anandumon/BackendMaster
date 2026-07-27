@@ -61,13 +61,18 @@ export function VoiceReader({ getText, onTranscript, lessonSlug }: Props) {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    setSupportedTTS("speechSynthesis" in window);
-    const win = window as unknown as {
-      SpeechRecognition?: new () => WebSpeechRecognition;
-      webkitSpeechRecognition?: new () => WebSpeechRecognition;
-    };
-    const SR = win.SpeechRecognition || win.webkitSpeechRecognition;
-    setSupportedSTT(Boolean(SR));
+    try {
+      setSupportedTTS("speechSynthesis" in window && Boolean(window.speechSynthesis));
+      const win = window as unknown as {
+        SpeechRecognition?: new () => WebSpeechRecognition;
+        webkitSpeechRecognition?: new () => WebSpeechRecognition;
+      };
+      const SR = win.SpeechRecognition || win.webkitSpeechRecognition;
+      setSupportedSTT(Boolean(SR));
+    } catch {
+      setSupportedTTS(false);
+      setSupportedSTT(false);
+    }
 
     const loadVoices = () => {
       const v = window.speechSynthesis?.getVoices() ?? [];
