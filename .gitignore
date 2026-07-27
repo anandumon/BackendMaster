@@ -11,6 +11,7 @@ dist-ssr/
 .vinxi/
 .nitro/
 .lovable/
+.vercel/
 
 # Environment files
 .env
