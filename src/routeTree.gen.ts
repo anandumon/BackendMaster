@@ -24,6 +24,7 @@ import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminTopicsRouteImport } from './routes/admin.topics'
 import { Route as AdminQueueRouteImport } from './routes/admin.queue'
 import { Route as AdminPdfsRouteImport } from './routes/admin.pdfs'
+import { Route as AdminLogsRouteImport } from './routes/admin.logs'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -100,6 +101,11 @@ const AdminPdfsRoute = AdminPdfsRouteImport.update({
   path: '/pdfs',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminLogsRoute = AdminLogsRouteImport.update({
+  id: '/logs',
+  path: '/logs',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -107,6 +113,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/offline': typeof OfflineRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/admin/logs': typeof AdminLogsRoute
   '/admin/pdfs': typeof AdminPdfsRoute
   '/admin/queue': typeof AdminQueueRoute
   '/admin/topics': typeof AdminTopicsRoute
@@ -123,6 +130,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/offline': typeof OfflineRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/admin/logs': typeof AdminLogsRoute
   '/admin/pdfs': typeof AdminPdfsRoute
   '/admin/queue': typeof AdminQueueRoute
   '/admin/topics': typeof AdminTopicsRoute
@@ -141,6 +149,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/offline': typeof OfflineRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/admin/logs': typeof AdminLogsRoute
   '/admin/pdfs': typeof AdminPdfsRoute
   '/admin/queue': typeof AdminQueueRoute
   '/admin/topics': typeof AdminTopicsRoute
@@ -160,6 +169,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/offline'
     | '/reset-password'
+    | '/admin/logs'
     | '/admin/pdfs'
     | '/admin/queue'
     | '/admin/topics'
@@ -176,6 +186,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/offline'
     | '/reset-password'
+    | '/admin/logs'
     | '/admin/pdfs'
     | '/admin/queue'
     | '/admin/topics'
@@ -193,6 +204,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/offline'
     | '/reset-password'
+    | '/admin/logs'
     | '/admin/pdfs'
     | '/admin/queue'
     | '/admin/topics'
@@ -325,10 +337,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPdfsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/logs': {
+      id: '/admin/logs'
+      path: '/logs'
+      fullPath: '/admin/logs'
+      preLoaderRoute: typeof AdminLogsRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
+  AdminLogsRoute: typeof AdminLogsRoute
   AdminPdfsRoute: typeof AdminPdfsRoute
   AdminQueueRoute: typeof AdminQueueRoute
   AdminTopicsRoute: typeof AdminTopicsRoute
@@ -337,6 +357,7 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminLogsRoute: AdminLogsRoute,
   AdminPdfsRoute: AdminPdfsRoute,
   AdminQueueRoute: AdminQueueRoute,
   AdminTopicsRoute: AdminTopicsRoute,

@@ -1,7 +1,7 @@
 import { createFileRoute, Link, Outlet, useRouterState, useNavigate } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { useAuth } from "@/lib/useAuth";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Shield,
   Upload,
@@ -94,8 +94,8 @@ function AdminShell() {
   const togglePinTab = (path: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setPinnedTabs((prev) => {
-      const next = prev.includes(path) ? prev.filter((p) => p !== path) : [...prev, path];
+    setPinnedTabs((prev: string[]) => {
+      const next = prev.includes(path) ? prev.filter((p: string) => p !== path) : [...prev, path];
       localStorage.setItem("backend_mastery:pinned_admin_tabs", JSON.stringify(next));
       return next;
     });
