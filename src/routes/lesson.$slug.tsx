@@ -236,7 +236,40 @@ function LessonContent() {
       });
       if (!res.ok) {
         const errText = await res.text();
-        throw new Error(errText || `Server error ${res.status}`);
+        let displayError = errText;
+        try {
+          const parsedErr = JSON.parse(errText);
+          displayError =
+            parsedErr.message ||
+            parsedErr.error ||
+            "Regeneration is not possible today because todays limit reached";
+          if (parsedErr.logs && Array.isArray(parsedErr.logs)) {
+            const localLogs = JSON.parse(
+              localStorage.getItem("backend_mastery:system_logs") || "[]",
+            );
+            localLogs.unshift({
+              id: `log_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+              created_at: new Date().toISOString(),
+              slug,
+              action: "generation_failed",
+              metadata: {
+                topicTitle: topic.title,
+                error: displayError,
+                message: displayError,
+                details: parsedErr.details,
+                logs: parsedErr.logs,
+              },
+            });
+            localStorage.setItem(
+              "backend_mastery:system_logs",
+              JSON.stringify(localLogs.slice(0, 100)),
+            );
+          }
+        } catch {
+          displayError =
+            errText || "Regeneration is not possible today because todays limit reached";
+        }
+        throw new Error(displayError);
       }
       const text = await res.text();
       const parsed = JSON.parse(text) as Omit<LessonContent, "generatedAt">;

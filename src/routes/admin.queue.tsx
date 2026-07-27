@@ -139,13 +139,36 @@ function QueuePage() {
       }
       if (!res.ok) {
         const text = await res.text();
-        const errMsg =
-          res.status === 429
-            ? "Rate limit (429). Pause and retry later."
-            : res.status === 402
-              ? "AI credits exhausted (402)."
-              : text.slice(0, 200) || `HTTP ${res.status}`;
-        throw Object.assign(new Error(errMsg), {
+        let displayError = "Regeneration is not possible today because todays limit reached";
+        try {
+          const parsed = JSON.parse(text);
+          displayError = parsed.message || parsed.error || displayError;
+          if (parsed.logs && Array.isArray(parsed.logs)) {
+            const localLogs = JSON.parse(
+              localStorage.getItem("backend_mastery:system_logs") || "[]",
+            );
+            localLogs.unshift({
+              id: `log_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+              created_at: new Date().toISOString(),
+              slug: item.slug,
+              action: "generation_failed",
+              metadata: {
+                topicTitle: item.title,
+                error: displayError,
+                message: displayError,
+                details: parsed.details,
+                logs: parsed.logs,
+              },
+            });
+            localStorage.setItem(
+              "backend_mastery:system_logs",
+              JSON.stringify(localLogs.slice(0, 100)),
+            );
+          }
+        } catch {
+          displayError = text.slice(0, 200) || displayError;
+        }
+        throw Object.assign(new Error(displayError), {
           httpStatus: res.status,
           responseBody: text,
           failedStep: "generate" as QueueStep,

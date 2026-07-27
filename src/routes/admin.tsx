@@ -11,6 +11,7 @@ import {
   Loader2,
   Lock,
   Users,
+  FileText,
 } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
@@ -88,6 +89,7 @@ function AdminShell() {
     { to: "/admin/topics", icon: <ListTree className="h-4 w-4" />, label: "Topics" },
     { to: "/admin/queue", icon: <PlayCircle className="h-4 w-4" />, label: "Regen queue" },
     { to: "/admin/users", icon: <Users className="h-4 w-4" />, label: "Users" },
+    { to: "/admin/logs", icon: <FileText className="h-4 w-4" />, label: "System logs" },
   ] as const;
   return (
     <AppShell>

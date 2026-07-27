@@ -102,6 +102,18 @@ export const Route = createFileRoute("/api/lesson")({
         }
 
         const MODELS = [
+          "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "inclusionai/ling-3.0-flash:free",
+          "nvidia/nemotron-3-super-120b-a12b:free",
+          "cohere/north-mini-code:free",
+          "poolside/laguna-s-2.1:free",
+          "poolside/laguna-xs-2.1:free",
+          "nvidia/nemotron-3-nano-30b-a3b:free",
+          "openai/gpt-oss-20b:free",
+          "google/gemma-4-26b-a4b-it:free",
+          "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+          "google/gemma-4-31b-it:free",
+          "openrouter/free",
           "meta-llama/llama-3.3-70b-instruct:free",
           "google/gemma-2-9b-it:free",
           "qwen/qwen-2.5-coder-32b-instruct:free",
@@ -109,10 +121,18 @@ export const Route = createFileRoute("/api/lesson")({
           "deepseek/deepseek-r1-distill-llama-70b:free",
         ];
 
+        const modelLogs: Array<{
+          model: string;
+          status?: number;
+          error?: string;
+          timestamp: string;
+        }> = [];
+
         let lastErrorText = "";
         let lastStatus = 500;
 
         for (const model of MODELS) {
+          const timestamp = new Date().toISOString();
           try {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 9000);
@@ -139,6 +159,12 @@ export const Route = createFileRoute("/api/lesson")({
             if (!res.ok) {
               lastStatus = res.status;
               lastErrorText = await res.text();
+              modelLogs.push({
+                model,
+                status: res.status,
+                error: lastErrorText || `HTTP ${res.status}`,
+                timestamp,
+              });
               if (res.status === 429) {
                 await new Promise((r) => setTimeout(r, 1500));
               }
@@ -156,18 +182,40 @@ export const Route = createFileRoute("/api/lesson")({
               return new Response(content, {
                 headers: { "Content-Type": "application/json" },
               });
-            } catch {
+            } catch (err: unknown) {
+              const errMsg = err instanceof Error ? err.message : "Invalid JSON response";
+              modelLogs.push({
+                model,
+                status: 200,
+                error: `JSON Parse error: ${errMsg}`,
+                timestamp,
+              });
               continue;
             }
-          } catch {
-            // Silently attempt next fallback model
+          } catch (err: unknown) {
+            const errMsg = err instanceof Error ? err.message : "Fetch timeout / Network error";
+            modelLogs.push({
+              model,
+              status: 0,
+              error: errMsg,
+              timestamp,
+            });
           }
         }
 
+        const userFriendlyMessage =
+          "Regeneration is not possible today because todays limit reached";
+
         return new Response(
-          lastErrorText || "All AI models unavailable. Please try again shortly.",
+          JSON.stringify({
+            error: userFriendlyMessage,
+            message: userFriendlyMessage,
+            details: lastErrorText || "All 17 fallback models attempted without success",
+            logs: modelLogs,
+          }),
           {
-            status: lastStatus || 500,
+            status: 429,
+            headers: { "Content-Type": "application/json" },
           },
         );
       },
