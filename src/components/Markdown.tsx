@@ -1,9 +1,72 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Copy, Check, Terminal, BookOpen } from "lucide-react";
 import { lookupJavadoc, type JavadocEntry } from "@/lib/javadoc-db";
 import { JavadocModal } from "@/components/JavadocModal";
+
+const JAVA_KEYWORD_REGEX =
+  /\b(Predicate|Consumer|Function|Supplier|BiFunction|UnaryOperator|BinaryOperator|Runnable|Callable|Comparator|Stream|Optional|List|ArrayList|Map|HashMap|Set|HashSet|Queue|Deque|AutoCloseable|Closeable|Thread|ExecutorService|Future|CompletableFuture|ReentrantLock|AtomicInteger|if|else|switch|case|for|while|do|break|continue|return|try|catch|finally|throw|throws|class|interface|enum|record|extends|implements|super|this|instanceof|public|private|protected|static|final|synchronized|volatile|transient|var|void|int|long|boolean|double|float|yield|sealed|permits|@FunctionalInterface)\b/g;
+
+function renderTextWithKeywords(
+  text: string,
+  onWordClick: (word: string) => void,
+): React.ReactNode[] {
+  if (!text || typeof text !== "string") return [text];
+
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  // Reset regex index
+  JAVA_KEYWORD_REGEX.lastIndex = 0;
+
+  while ((match = JAVA_KEYWORD_REGEX.exec(text)) !== null) {
+    const matchText = match[0];
+    const matchIndex = match.index;
+
+    // Append preceding plain text
+    if (matchIndex > lastIndex) {
+      parts.push(text.substring(lastIndex, matchIndex));
+    }
+
+    // Append clickable keyword span
+    parts.push(
+      <span
+        key={`${matchText}-${matchIndex}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          onWordClick(matchText);
+        }}
+        className="font-mono text-[12px] font-bold px-1 py-0.5 rounded bg-primary/10 text-primary dark:bg-primary/25 dark:text-primary-foreground border border-primary/20 hover:bg-primary/20 hover:scale-105 transition-all cursor-pointer inline-flex items-center gap-0.5 mx-0.5 shadow-2xs group"
+        title={`Click for Javadoc: ${matchText}`}
+      >
+        <span>{matchText}</span>
+        <BookOpen className="h-2.5 w-2.5 opacity-60 group-hover:opacity-100 shrink-0 text-primary" />
+      </span>,
+    );
+
+    lastIndex = matchIndex + matchText.length;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(text.substring(lastIndex));
+  }
+
+  return parts;
+}
+
+function processChildren(
+  children: React.ReactNode,
+  onWordClick: (word: string) => void,
+): React.ReactNode {
+  return React.Children.map(children, (child) => {
+    if (typeof child === "string") {
+      return renderTextWithKeywords(child, onWordClick);
+    }
+    return child;
+  });
+}
 
 export function Markdown({ children }: { children: string }) {
   const [selectedEntry, setSelectedEntry] = useState<JavadocEntry | null>(null);
@@ -18,29 +81,39 @@ export function Markdown({ children }: { children: string }) {
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
-          h1: ({ node, ...props }) => (
+          h1: ({ node, children, ...props }) => (
             <h1
               className="text-xl font-bold text-foreground mt-6 mb-3 flex items-center gap-2 border-b border-border/60 pb-2"
               {...props}
-            />
+            >
+              {processChildren(children, handleWordClick)}
+            </h1>
           ),
-          h2: ({ node, ...props }) => (
+          h2: ({ node, children, ...props }) => (
             <h2
               className="text-lg font-bold text-foreground mt-5 mb-2.5 flex items-center gap-2 text-primary"
               {...props}
-            />
+            >
+              {processChildren(children, handleWordClick)}
+            </h2>
           ),
-          h3: ({ node, ...props }) => (
-            <h3 className="text-base font-semibold text-foreground mt-4 mb-2" {...props} />
+          h3: ({ node, children, ...props }) => (
+            <h3 className="text-base font-semibold text-foreground mt-4 mb-2" {...props}>
+              {processChildren(children, handleWordClick)}
+            </h3>
           ),
-          h4: ({ node, ...props }) => (
-            <h4 className="text-sm font-semibold text-foreground/90 mt-3 mb-1.5" {...props} />
+          h4: ({ node, children, ...props }) => (
+            <h4 className="text-sm font-semibold text-foreground/90 mt-3 mb-1.5" {...props}>
+              {processChildren(children, handleWordClick)}
+            </h4>
           ),
-          p: ({ node, ...props }) => (
+          p: ({ node, children, ...props }) => (
             <p
               className="mb-3 text-foreground/90 dark:text-muted-foreground leading-relaxed"
               {...props}
-            />
+            >
+              {processChildren(children, handleWordClick)}
+            </p>
           ),
           ul: ({ node, ...props }) => (
             <ul
@@ -54,29 +127,39 @@ export function Markdown({ children }: { children: string }) {
               {...props}
             />
           ),
-          li: ({ node, ...props }) => <li className="leading-normal" {...props} />,
-          blockquote: ({ node, ...props }) => (
+          li: ({ node, children, ...props }) => (
+            <li className="leading-normal" {...props}>
+              {processChildren(children, handleWordClick)}
+            </li>
+          ),
+          blockquote: ({ node, children, ...props }) => (
             <blockquote
               className="border-l-4 border-primary/70 bg-primary/5 px-4 py-3 rounded-r-xl my-4 text-foreground/90 dark:text-muted-foreground italic"
               {...props}
-            />
+            >
+              {processChildren(children, handleWordClick)}
+            </blockquote>
           ),
           table: ({ node, ...props }) => (
             <div className="overflow-x-auto my-4 rounded-xl border border-border/80 shadow-xs bg-card">
               <table className="w-full text-left text-xs border-collapse" {...props} />
             </div>
           ),
-          th: ({ node, ...props }) => (
+          th: ({ node, children, ...props }) => (
             <th
               className="bg-muted/80 px-3.5 py-2.5 font-bold text-foreground border-b border-border"
               {...props}
-            />
+            >
+              {processChildren(children, handleWordClick)}
+            </th>
           ),
-          td: ({ node, ...props }) => (
+          td: ({ node, children, ...props }) => (
             <td
               className="px-3.5 py-2.5 border-b border-border/50 text-foreground/90 dark:text-muted-foreground"
               {...props}
-            />
+            >
+              {processChildren(children, handleWordClick)}
+            </td>
           ),
           code({ node, inline, className, children, ...props }: any) {
             const match = /language-(\w+)/.exec(className || "");
