@@ -44,7 +44,7 @@ function createSupabaseClient() {
     (typeof process !== "undefined"
       ? process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL
       : "") ||
-    "https://placeholder.supabase.co";
+    "https://cupmcnyxfbqkoexspqif.supabase.co";
 
   const SUPABASE_PUBLISHABLE_KEY =
     import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
@@ -55,7 +55,7 @@ function createSupabaseClient() {
         process.env.SUPABASE_PUBLISHABLE_KEY ||
         process.env.SUPABASE_ANON_KEY
       : "") ||
-    "sb_publishable_placeholder";
+    "sb_publishable_WQ1gH1C14MzA59rKGyaTrw_Xj0K0HMt";
 
   if (
     !import.meta.env.VITE_SUPABASE_URL &&
