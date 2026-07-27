@@ -8,6 +8,15 @@ function isNewSupabaseApiKey(value: string): boolean {
 
 function createSupabaseFetch(supabaseKey: string): typeof fetch {
   return (input, init) => {
+    const urlStr = typeof input === "string" ? input : input instanceof Request ? input.url : "";
+    if (urlStr.includes("placeholder.supabase.co")) {
+      return Promise.reject(
+        new Error(
+          "Supabase is not configured. Please add VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY to GitHub Secrets or Vercel Environment Variables.",
+        ),
+      );
+    }
+
     const headers = new Headers(
       typeof Request !== "undefined" && input instanceof Request ? input.headers : undefined,
     );
