@@ -12,6 +12,7 @@ import {
   Lock,
   Users,
   FileText,
+  Pin,
 } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
@@ -78,9 +79,27 @@ function AdminLayout() {
 import { syncRegenQueueWithDB } from "@/lib/lesson-db";
 
 function AdminShell() {
+  const [pinnedTabs, setPinnedTabs] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("backend_mastery:pinned_admin_tabs") || "[]");
+    } catch {
+      return [];
+    }
+  });
+
   useEffect(() => {
     syncRegenQueueWithDB();
   }, []);
+
+  const togglePinTab = (path: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setPinnedTabs((prev) => {
+      const next = prev.includes(path) ? prev.filter((p) => p !== path) : [...prev, path];
+      localStorage.setItem("backend_mastery:pinned_admin_tabs", JSON.stringify(next));
+      return next;
+    });
+  };
 
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const tabs = [
@@ -91,6 +110,7 @@ function AdminShell() {
     { to: "/admin/users", icon: <Users className="h-4 w-4" />, label: "Users" },
     { to: "/admin/logs", icon: <FileText className="h-4 w-4" />, label: "System logs" },
   ] as const;
+
   return (
     <AppShell>
       <div className="max-w-6xl mx-auto px-5 lg:px-10 py-8 space-y-6 animate-in fade-in duration-300">
@@ -103,26 +123,68 @@ function AdminShell() {
               Curriculum &amp; System Settings
             </h1>
           </div>
+
+          {/* Quick Pinned Admin Screens Bar */}
+          {pinnedTabs.length > 0 && (
+            <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-xl text-xs">
+              <span className="text-amber-600 dark:text-amber-400 font-bold flex items-center gap-1 text-[10px] uppercase">
+                <Pin className="h-3 w-3 fill-amber-500 text-amber-500" /> Pinned:
+              </span>
+              <div className="flex items-center gap-1">
+                {tabs
+                  .filter((t) => pinnedTabs.includes(t.to))
+                  .map((t) => (
+                    <Link
+                      key={t.to}
+                      to={t.to}
+                      className={`px-2 py-0.5 rounded-lg text-xs font-medium transition-colors ${
+                        pathname === t.to
+                          ? "bg-amber-500 text-white font-bold"
+                          : "bg-card border border-border hover:border-amber-500/40 text-foreground"
+                      }`}
+                    >
+                      {t.label}
+                    </Link>
+                  ))}
+              </div>
+            </div>
+          )}
         </header>
 
         {/* Sleek Horizontal Animated Navigation Bar */}
         <nav className="flex flex-wrap items-center gap-1.5 bg-card/70 backdrop-blur-md border border-border/80 p-1.5 rounded-2xl shadow-sm">
           {tabs.map((t) => {
             const active = pathname === t.to;
+            const isPinned = pinnedTabs.includes(t.to);
             return (
-              <Link
-                key={t.to}
-                to={t.to}
-                className={`relative text-xs lg:text-sm font-medium inline-flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200 ${
-                  active
-                    ? "text-primary-foreground font-semibold shadow-md scale-[1.02]"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
-                }`}
-                style={active ? { background: "var(--gradient-primary)" } : undefined}
-              >
-                {t.icon}
-                <span>{t.label}</span>
-              </Link>
+              <div key={t.to} className="relative group inline-flex items-center">
+                <Link
+                  to={t.to}
+                  className={`relative text-xs lg:text-sm font-medium inline-flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200 ${
+                    active
+                      ? "text-primary-foreground font-semibold shadow-md scale-[1.02]"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                  }`}
+                  style={active ? { background: "var(--gradient-primary)" } : undefined}
+                >
+                  {t.icon}
+                  <span>{t.label}</span>
+                  {isPinned && (
+                    <Pin className="h-3 w-3 fill-amber-400 text-amber-400 shrink-0 ml-0.5" />
+                  )}
+                </Link>
+                <button
+                  onClick={(e) => togglePinTab(t.to, e)}
+                  className={`p-1 rounded-lg text-xs hover:bg-muted transition-opacity ml-0.5 ${
+                    isPinned
+                      ? "text-amber-500"
+                      : "opacity-0 group-hover:opacity-100 text-muted-foreground"
+                  }`}
+                  title={isPinned ? "Unpin screen" : "Pin screen"}
+                >
+                  <Pin className={`h-3 w-3 ${isPinned ? "fill-amber-500" : ""}`} />
+                </button>
+              </div>
             );
           })}
         </nav>

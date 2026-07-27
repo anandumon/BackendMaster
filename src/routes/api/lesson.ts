@@ -12,35 +12,36 @@ const SYSTEM = `You are a Senior Software Architect, University Professor, Techn
 Your task is to create world-class, textbook-quality educational content suitable for complete beginners, intermediate developers, senior engineers, software architects, technical interviews, and university students.
 
 -----------------------------------------
-CONTENT WRITING STYLE
+CONTENT WRITING STYLE & EXHAUSTIVE COVERAGE
 -----------------------------------------
-• Professional, educational, and engaging tone.
-• Avoid unnecessary jargon. Whenever a technical word is introduced, explain it immediately using simple language.
+• Professional, educational, and deeply comprehensive tone.
+• Avoid vague summaries or high-level overviews. Every lesson MUST explain all underlying subtopics, methods, keywords, syntax rules, and internal mechanics.
 • Always teach concepts from first principles (Feynman Technique). Do NOT assume prior knowledge.
-• Explain WHY before HOW.
-• Always explain: What, Why, How, When, Where, Advantages, Disadvantages. Never skip intermediate reasoning.
+• Provide explicit decision matrices for: HOW TO USE IT, WHERE TO USE IT, WHEN TO USE IT, WHY TO USE IT.
+• Detail all related subtopics, built-in methods, functional interfaces, parameters, keys, and keywords.
 • For every concept, provide:
   1. Explanation as if teaching a 12-year-old.
   2. Real-world analogy (Restaurant, Bank, Airport, Hospital, Post Office, Factory, etc.).
-  3. Practical software code example (Basic -> Intermediate -> Production -> Enterprise).
-  4. Enterprise project example (Amazon, Netflix, Google, Uber, Banking, Healthcare).
-  5. Internal working step-by-step (Memory, CPU, JVM/Runtime behavior, hidden mechanisms).
-  6. One-sentence summary & Key takeaway.
+  3. Comprehensive Subtopics & Method Directory (all related functions, syntax, and methods).
+  4. Practical software code example (Basic -> Intermediate -> Production -> Enterprise).
+  5. Enterprise project example (Amazon, Netflix, Google, Uber, Banking, Healthcare).
+  6. Internal working step-by-step (Memory, CPU, JVM/Runtime behavior, hidden mechanisms).
+  7. Decision Matrix: How, When, Where, Why to use.
 • Use ASCII diagrams for architecture/data flow visualization.
 • Ensure technical accuracy while remaining approachable.`;
 
 function buildPrompt(b: Body) {
-  return `Generate a comprehensive, textbook-quality master lesson for the topic "${b.title}" (domain: ${b.domain} > section: ${b.section}).
+  return `Generate an exhaustive, textbook-quality master lesson for the topic "${b.title}" (domain: ${b.domain} > section: ${b.section}).
 
 Return STRICT JSON only (no prose outside JSON, no outer text). Every string field's VALUE must be detailed Markdown following the structure below.
 
 JSON Schema:
 {
-  "overview": "# 1 Introduction & Definition\\n\\n### Introduction\\nExplain in simple English. Why was this created? What problem does it solve? What would happen without it? Relatable real-world examples.\\n\\n### Definitions\\n- **Professional Definition**:\\n- **Beginner Friendly Definition**:\\n- **One-line Definition**:\\n- **Technical Definition**:",
+  "overview": "# 1 Introduction, Definition & Subtopics Breakdown\\n\\n### Introduction\\nExplain in simple English. Why was this created? What problem does it solve? What would happen without it?\\n\\n### Definitions\\n- **Professional Definition**:\\n- **Beginner Friendly Definition**:\\n- **One-line Definition**:\\n- **Technical Definition**:\\n\\n### Subtopics & Key Mechanics Directory\\nExhaustively detail all subtopics under ${b.title}. For example, if it's Lambdas or Stream API, explain all sub-types, functional interfaces, syntax rules, method references, effectively final scope rules, and type inference.\\n\\n### Methods, Functions & Keywords Directory\\nProvide an explicit table & list of all related built-in methods, keys, keywords, operators, and parameters.",
 
   "whyExists": "# 3 Why do we need it?\\n\\nDetailed breakdown of:\\n- Historical Background & Industry Motivation\\n- Business Motivation & Developer Motivation\\n- Concrete Problems, Limitations & Pain Points solved",
 
-  "theory": "# 4 Core Theory & Real-World Use Cases\\n\\nExplain every concept in detail. Never summarize. Break everything into logical steps.\\nEach paragraph builds on the previous one.\\n\\n### Real-World Use Cases\\nEnterprise examples (Banking, Amazon, Netflix, Google, Uber, Healthcare, Financial Systems).",
+  "theory": "# 4 Core Theory, Decision Matrix & Real-World Use Cases\\n\\nExplain every concept in detail. Never summarize. Break everything into logical steps.\\n\\n### Decision Matrix (How, Where, When, Why)\\n- **HOW TO USE IT**: Step-by-step code and syntax patterns.\\n- **WHERE TO USE IT**: Specific architectural layers (Service layer, Controllers, Async pipelines, Stream processing, DB mapping).\\n- **WHEN TO USE IT**: Ideal scenarios vs scenarios where it MUST BE AVOIDED.\\n- **WHY TO USE IT**: Quantitative & qualitative benefits (Performance, Boilerplate reduction, Thread safety, Scalability).\\n\\n### Real-World Enterprise Use Cases\\nEnterprise examples (Banking, Amazon, Netflix, Google, Uber, Healthcare, Financial Systems).",
 
   "internalWorking": "# 5 Internal Working & Visualization\\n\\nStep-by-step explanation of what happens internally from first line of code until execution completes.\\n- Memory layout & Objects\\n- CPU execution & Runtime/JVM behavior\\n- Framework internals & Hidden mechanisms\\n\\n### Visualization\\nASCII diagrams showing User -> Controller -> Service -> Repository -> Database flow.",
 
@@ -56,13 +57,13 @@ JSON Schema:
 
   "interviewQuestions": "# 15 & 16 Interview Masterclass\\n\\n### Frequently Asked Interview Questions (20 Questions)\\nFor each question, provide: Beginner Answer, Professional Answer, Senior Engineer Answer, and Interviewer Tips.\\n\\n### Scenario-Based Questions (15 Real Scenarios)\\nExplain Situation, Problem, Solution, and Reasoning.",
 
-  "cheatsheet": "# 17 & 19 Coding Masterclass & Formula Sheet\\n\\nCode progression from Basic -> Intermediate -> Production -> Enterprise with line-by-line explanations.\\nQuick formula sheet, memory tricks, key shortcuts.",
+  "cheatsheet": "# 17 & 19 Coding Masterclass, Subtopic Code Progression & Formula Sheet\\n\\nProvide practical code progression covering all subtopics and methods:\\n1. Basic Code Example\\n2. Intermediate Code Example\\n3. Production Code Example\\n4. Enterprise Microservice Example\\n\\nInclude line-by-line explanations for every code snippet, quick formula sheet, memory tricks, key shortcuts.",
 
   "practicalUsage": "# 14 Performance & Scalability Considerations\\n\\nMemory, CPU, thread safety, caching, optimization, and high-throughput production scaling.",
 
   "prerequisites": "Prerequisites list in markdown bullet points.",
 
-  "revisionNotes": "# 19 & 20 One-Page Revision & Complete Summary\\n\\nOne-page quick summary covering key takeaways, production tips, common pitfalls, and core formulas.",
+  "revisionNotes": "# 19 & 20 One-Page Revision & Complete Summary\\n\\nOne-page quick summary covering key takeaways, production tips, common pitfalls, subtopics summary, and core formulas.",
 
   "mcqs": [
     {
