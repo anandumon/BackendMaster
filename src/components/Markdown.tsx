@@ -1,9 +1,18 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useState } from "react";
-import { Copy, Check, Terminal } from "lucide-react";
+import { Copy, Check, Terminal, BookOpen } from "lucide-react";
+import { lookupJavadoc, type JavadocEntry } from "@/lib/javadoc-db";
+import { JavadocModal } from "@/components/JavadocModal";
 
 export function Markdown({ children }: { children: string }) {
+  const [selectedEntry, setSelectedEntry] = useState<JavadocEntry | null>(null);
+
+  const handleWordClick = (word: string) => {
+    const entry = lookupJavadoc(word);
+    setSelectedEntry(entry);
+  };
+
   return (
     <div className="prose-lesson text-sm leading-relaxed">
       <ReactMarkdown
@@ -28,41 +37,44 @@ export function Markdown({ children }: { children: string }) {
             <h4 className="text-sm font-semibold text-foreground/90 mt-3 mb-1.5" {...props} />
           ),
           p: ({ node, ...props }) => (
-            <p className="mb-3 text-muted-foreground leading-relaxed" {...props} />
+            <p
+              className="mb-3 text-foreground/90 dark:text-muted-foreground leading-relaxed"
+              {...props}
+            />
           ),
           ul: ({ node, ...props }) => (
             <ul
-              className="list-disc list-inside space-y-1.5 mb-4 text-muted-foreground pl-2"
+              className="list-disc list-inside space-y-1.5 mb-4 text-foreground/90 dark:text-muted-foreground pl-2"
               {...props}
             />
           ),
           ol: ({ node, ...props }) => (
             <ol
-              className="list-decimal list-inside space-y-1.5 mb-4 text-muted-foreground pl-2"
+              className="list-decimal list-inside space-y-1.5 mb-4 text-foreground/90 dark:text-muted-foreground pl-2"
               {...props}
             />
           ),
           li: ({ node, ...props }) => <li className="leading-normal" {...props} />,
           blockquote: ({ node, ...props }) => (
             <blockquote
-              className="border-l-4 border-primary/70 bg-primary/5 px-4 py-3 rounded-r-xl my-4 text-muted-foreground italic"
+              className="border-l-4 border-primary/70 bg-primary/5 px-4 py-3 rounded-r-xl my-4 text-foreground/90 dark:text-muted-foreground italic"
               {...props}
             />
           ),
           table: ({ node, ...props }) => (
-            <div className="overflow-x-auto my-4 rounded-xl border border-border">
+            <div className="overflow-x-auto my-4 rounded-xl border border-border/80 shadow-xs bg-card">
               <table className="w-full text-left text-xs border-collapse" {...props} />
             </div>
           ),
           th: ({ node, ...props }) => (
             <th
-              className="bg-muted px-3.5 py-2.5 font-semibold text-foreground border-b border-border"
+              className="bg-muted/80 px-3.5 py-2.5 font-bold text-foreground border-b border-border"
               {...props}
             />
           ),
           td: ({ node, ...props }) => (
             <td
-              className="px-3.5 py-2.5 border-b border-border/50 text-muted-foreground"
+              className="px-3.5 py-2.5 border-b border-border/50 text-foreground/90 dark:text-muted-foreground"
               {...props}
             />
           ),
@@ -78,19 +90,25 @@ export function Markdown({ children }: { children: string }) {
             ) {
               return <CodeBlock language={match?.[1] || "text"} value={codeString} />;
             }
+
             return (
-              <code
-                className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono font-medium text-primary border border-primary/10"
-                {...props}
+              <button
+                type="button"
+                onClick={() => handleWordClick(codeString)}
+                className="inline-flex items-center gap-1 font-mono text-[12px] font-semibold px-2 py-0.5 my-0.5 rounded-md border border-primary/30 bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground hover:bg-primary/20 hover:scale-[1.03] transition-all cursor-pointer group shadow-2xs"
+                title="Click to view Javadoc & Keyword specification"
               >
-                {children}
-              </code>
+                <span>{children}</span>
+                <BookOpen className="h-3 w-3 opacity-60 group-hover:opacity-100 shrink-0 text-primary" />
+              </button>
             );
           },
         }}
       >
         {children}
       </ReactMarkdown>
+
+      <JavadocModal entry={selectedEntry} onClose={() => setSelectedEntry(null)} />
     </div>
   );
 }
@@ -105,13 +123,11 @@ function CodeBlock({ language, value }: { language: string; value: string }) {
   };
 
   const isAsciiDiagram =
-    value.includes("+--") ||
-    value.includes("|-->") ||
-    (value.includes("[") && value.includes("]"));
+    value.includes("+--") || value.includes("|-->") || (value.includes("[") && value.includes("]"));
 
   return (
-    <div className="my-4 rounded-xl overflow-hidden border border-border/80 bg-zinc-950 text-zinc-100 shadow-md">
-      <div className="flex items-center justify-between px-4 py-2 bg-zinc-900 border-b border-zinc-800 text-xs text-zinc-400">
+    <div className="my-4 rounded-xl overflow-hidden border border-zinc-800 bg-zinc-950 text-zinc-100 shadow-md">
+      <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900 border-b border-zinc-800 text-xs text-zinc-400">
         <div className="flex items-center gap-2 font-mono">
           <Terminal className="h-3.5 w-3.5 text-primary" />
           <span className="uppercase text-[11px] font-semibold text-zinc-300">
@@ -120,7 +136,7 @@ function CodeBlock({ language, value }: { language: string; value: string }) {
         </div>
         <button
           onClick={handleCopy}
-          className="flex items-center gap-1.5 text-zinc-400 hover:text-white transition-colors px-2 py-1 rounded bg-zinc-800/60 hover:bg-zinc-800"
+          className="flex items-center gap-1.5 text-zinc-400 hover:text-white transition-colors px-2 py-1 rounded bg-zinc-800/80 hover:bg-zinc-800"
         >
           {copied ? (
             <>
@@ -135,8 +151,10 @@ function CodeBlock({ language, value }: { language: string; value: string }) {
           )}
         </button>
       </div>
-      <pre className="p-4 text-xs font-mono overflow-x-auto leading-relaxed text-zinc-200">
-        <code>{value}</code>
+      <pre className="!bg-zinc-950 !text-zinc-100 p-4 text-xs font-mono overflow-x-auto leading-relaxed border-0 m-0">
+        <code className="!bg-transparent !text-zinc-100 !border-0 !p-0 font-mono text-xs shadow-none">
+          {value}
+        </code>
       </pre>
     </div>
   );
