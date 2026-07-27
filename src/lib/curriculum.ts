@@ -58,6 +58,11 @@ export const DOMAINS: Domain[] = [
           t("enums", "Enums", "Type-safe constants, methods on enums."),
           t("java-io", "Java I/O", "Streams, readers/writers, NIO basics."),
           t("scanner-bufferedreader", "Scanner vs BufferedReader", "Console input performance."),
+          t(
+            "java-keywords",
+            "Java Keywords & Javadoc Standards",
+            "Exhaustive guide to Java reserved keywords, access modifiers, and Javadoc standards (@param, @return, @throws).",
+          ),
         ],
       },
       {
