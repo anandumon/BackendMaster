@@ -48,8 +48,13 @@ function createSupabaseClient() {
       : "") ||
     "sb_publishable_placeholder";
 
-  if (!import.meta.env.VITE_SUPABASE_URL && (typeof process === "undefined" || !process.env.VITE_SUPABASE_URL)) {
-    console.warn("[Supabase] VITE_SUPABASE_URL environment variable is missing in deployment settings.");
+  if (
+    !import.meta.env.VITE_SUPABASE_URL &&
+    (typeof process === "undefined" || !process.env.VITE_SUPABASE_URL)
+  ) {
+    console.warn(
+      "[Supabase] VITE_SUPABASE_URL environment variable is missing in deployment settings.",
+    );
   }
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
