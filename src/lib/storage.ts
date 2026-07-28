@@ -46,8 +46,19 @@ export type LessonContent = {
 
 const CACHE_KEY = (slug: string) => `lesson-cache:${slug}`;
 
+export function normalizeLessonContent(data: LessonContent | null): LessonContent | null {
+  if (!data || typeof data !== "object") return null;
+  return {
+    ...data,
+    mcqs: Array.isArray(data.mcqs) ? data.mcqs : [],
+    flashcards: Array.isArray(data.flashcards) ? data.flashcards : [],
+    relatedTopics: Array.isArray(data.relatedTopics) ? data.relatedTopics : [],
+  };
+}
+
 export function getCachedLesson(slug: string): LessonContent | null {
-  return safeGet<LessonContent | null>(CACHE_KEY(slug), null);
+  const raw = safeGet<LessonContent | null>(CACHE_KEY(slug), null);
+  return normalizeLessonContent(raw);
 }
 
 export function setCachedLesson(slug: string, content: LessonContent) {

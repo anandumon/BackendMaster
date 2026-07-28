@@ -1,7 +1,12 @@
 // Lesson DB layer — shared lessons + per-user overrides via Supabase
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
-import { getCachedLesson, setCachedLesson, type LessonContent } from "@/lib/storage";
+import {
+  getCachedLesson,
+  setCachedLesson,
+  normalizeLessonContent,
+  type LessonContent,
+} from "@/lib/storage";
 
 /** Fetch a lesson: local cache first (0ms) → user override → shared lesson → null */
 export async function fetchLesson(slug: string, userId?: string): Promise<LessonContent | null> {
@@ -21,12 +26,14 @@ export async function fetchLesson(slug: string, userId?: string): Promise<Lesson
         .eq("slug", slug)
         .maybeSingle();
       if (override?.content) {
-        const full = {
+        const full = normalizeLessonContent({
           ...(override.content as unknown as LessonContent),
           generatedAt: new Date(override.generated_at).getTime(),
-        };
-        setCachedLesson(slug, full);
-        return full;
+        });
+        if (full) {
+          setCachedLesson(slug, full);
+          return full;
+        }
       }
     } catch (e) {
       console.warn("Error fetching user override lesson:", e);
@@ -41,12 +48,14 @@ export async function fetchLesson(slug: string, userId?: string): Promise<Lesson
       .eq("slug", slug)
       .maybeSingle();
     if (shared?.content) {
-      const full = {
+      const full = normalizeLessonContent({
         ...(shared.content as unknown as LessonContent),
         generatedAt: new Date(shared.generated_at).getTime(),
-      };
-      setCachedLesson(slug, full);
-      return full;
+      });
+      if (full) {
+        setCachedLesson(slug, full);
+        return full;
+      }
     }
   } catch (e) {
     console.warn("Error fetching shared lesson:", e);
