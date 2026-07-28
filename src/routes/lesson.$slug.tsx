@@ -447,17 +447,17 @@ function LessonContent() {
                 </SectionCard>
               );
             })}
-            {content.mcqs?.length > 0 && (
+            {Array.isArray(content.mcqs) && content.mcqs.length > 0 && (
               <SectionCard title="MCQs" emoji="🧠" isActive={false}>
                 <McqList items={content.mcqs} />
               </SectionCard>
             )}
-            {content.flashcards?.length > 0 && (
+            {Array.isArray(content.flashcards) && content.flashcards.length > 0 && (
               <SectionCard title="Flashcards" emoji="🃏" isActive={false}>
                 <Flashcards items={content.flashcards} />
               </SectionCard>
             )}
-            {content.relatedTopics?.length > 0 && (
+            {Array.isArray(content.relatedTopics) && content.relatedTopics.length > 0 && (
               <SectionCard title="Related Topics" emoji="🔗" isActive={false}>
                 <ul className="flex flex-wrap gap-2">
                   {content.relatedTopics.map((r, i) => (
@@ -566,9 +566,10 @@ function McqList({
 }: {
   items: Array<{ q: string; options: string[]; answer: number; explanation: string }>;
 }) {
+  const safeItems = Array.isArray(items) ? items : [];
   return (
     <div className="space-y-4">
-      {items.map((m, i) => (
+      {safeItems.map((m, i) => (
         <Mcq key={i} item={m} index={i} />
       ))}
     </div>
@@ -583,13 +584,14 @@ function Mcq({
   index: number;
 }) {
   const [picked, setPicked] = useState<number | null>(null);
+  const options = Array.isArray(item?.options) ? item.options : [];
   return (
     <div className="rounded-xl border border-border p-4">
       <div className="text-sm font-medium mb-2">
-        <span className="text-muted-foreground">Q{index + 1}.</span> {item.q}
+        <span className="text-muted-foreground">Q{index + 1}.</span> {item?.q}
       </div>
       <div className="grid gap-2">
-        {item.options.map((o, i) => {
+        {options.map((o, i) => {
           const isCorrect = i === item.answer;
           const isPicked = picked === i;
           const showResult = picked !== null;
@@ -608,7 +610,7 @@ function Mcq({
       {picked !== null && (
         <div className="mt-3 text-xs text-muted-foreground">
           <strong className="text-foreground">Explanation: </strong>
-          {item.explanation}
+          {item?.explanation}
         </div>
       )}
     </div>
@@ -616,9 +618,10 @@ function Mcq({
 }
 
 function Flashcards({ items }: { items: Array<{ q: string; a: string }> }) {
+  const safeItems = Array.isArray(items) ? items : [];
   return (
     <div className="grid sm:grid-cols-2 gap-3">
-      {items.map((f, i) => (
+      {safeItems.map((f, i) => (
         <Flashcard key={i} f={f} />
       ))}
     </div>
