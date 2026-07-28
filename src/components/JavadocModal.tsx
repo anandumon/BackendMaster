@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { type JavadocEntry } from "@/lib/javadoc-db";
 import {
   X,
@@ -37,11 +37,41 @@ export function JavadocModal({
   const [copied, setCopied] = useState(false);
   const [expandedInterviewIdx, setExpandedInterviewIdx] = useState<number | null>(0);
 
+  const isStandardLib = Boolean(entry?.officialDocUrl || entry?.hierarchy);
+
+  const availableTabs: ModalTab[] = useMemo(() => {
+    const tabs: ModalTab[] = ["overview", "syntax", "best_practices", "interview"];
+    if (isStandardLib) tabs.push("javadocs");
+    return tabs;
+  }, [isStandardLib]);
+
   useEffect(() => {
     if (activeTab) {
       localStorage.setItem(TAB_STORAGE_KEY, activeTab);
     }
   }, [activeTab]);
+
+  // STEP 9: Keyboard Navigation (Esc to close, Arrow keys to cycle tabs)
+  useEffect(() => {
+    if (!entry) return;
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        onClose();
+      } else if (e.key === "ArrowRight") {
+        const currentIdx = availableTabs.indexOf(activeTab);
+        const nextIdx = (currentIdx + 1) % availableTabs.length;
+        setActiveTab(availableTabs[nextIdx]);
+      } else if (e.key === "ArrowLeft") {
+        const currentIdx = availableTabs.indexOf(activeTab);
+        const prevIdx = (currentIdx - 1 + availableTabs.length) % availableTabs.length;
+        setActiveTab(availableTabs[prevIdx]);
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [entry, activeTab, availableTabs, onClose]);
 
   if (!entry) return null;
 
@@ -51,10 +81,11 @@ export function JavadocModal({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const isStandardLib = Boolean(entry.officialDocUrl || entry.hierarchy);
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm animate-in fade-in duration-200">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm animate-in fade-in duration-200"
+      onClick={onClose}
+    >
       <div
         className="relative w-full max-w-2xl max-h-[88vh] flex flex-col rounded-2xl border border-blue-200 dark:border-blue-900/80 bg-card shadow-2xl text-foreground overflow-hidden"
         onClick={(e) => e.stopPropagation()}

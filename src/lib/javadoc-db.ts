@@ -1,14 +1,14 @@
 export type KeywordCategory =
-  | "Java Language Keyword"
-  | "Primitive Type"
-  | "Collection"
-  | "Interface"
-  | "Stream API"
+  | "Language Keyword"
+  | "Primitive Types"
+  | "Collections"
+  | "Interfaces"
+  | "Streams"
   | "Concurrency"
-  | "Exception"
-  | "JVM"
-  | "Annotation"
-  | "Spring";
+  | "Exceptions"
+  | "Annotations"
+  | "Spring"
+  | "JVM";
 
 export type JavadocEntry = {
   name: string;
@@ -30,52 +30,119 @@ export type JavadocEntry = {
   methods?: Array<{ name: string; signature: string; desc: string }>;
 };
 
-// Blacklist of forbidden variables/literals (STEP 6)
-const NON_KEYWORD_BLACKLIST = new Set([
+// STEP 6: Explicit Blacklist for Non-Educational Terms (Variables, Examples, Literals)
+const STEP6_BLACKLIST = new Set([
+  // Example Class Names
+  "helloworld",
+  "student",
+  "employee",
+  "customer",
+  "account",
+  "order",
+  "product",
+  "vehicle",
+  "animal",
+  "person",
+  "demo",
+  "main",
+  "application",
+  "app",
+  "test",
+  "example",
+  "foo",
+  "bar",
+  "task",
+  // File names & extensions
+  "helloworld.java",
+  "student.java",
+  "employee.java",
+  "account.java",
+  "main.java",
+  "app.java",
+  "example.java",
+  "helloworld.class",
+  "student.class",
+  "employee.class",
+  // Variable Names & Parameters
+  "x",
+  "y",
+  "z",
+  "i",
+  "j",
+  "k",
+  "temp",
+  "count",
+  "counter",
+  "number",
+  "amount",
+  "salary",
+  "name",
+  "value",
+  "result",
   "user",
   "users",
   "student",
   "students",
-  "count",
-  "counter",
-  "temp",
-  "amount",
-  "i",
-  "j",
-  "k",
-  "n",
-  "m",
   "customer",
   "account",
-  "id",
+  "map",
+  "list",
+  "queue",
+  "stack",
+  "obj",
   "data",
   "item",
   "items",
-  "result",
+  "index",
+  "current",
+  "next",
+  "prev",
+  "id",
+  "age",
+  "price",
+  "quantity",
+  "text",
+  "message",
+  "filename",
+  "path",
   "val",
-  "value",
-  "list",
   "arr",
-  "obj",
   "str",
-  "print",
-  "calculate",
+  "n",
+  "m",
+  // Method Calls
   "save",
+  "load",
+  "print",
+  "execute",
+  "calculate",
   "process",
   "run",
-  "doSomething",
+  "display",
+  "add",
+  "put",
+  "get",
+  // Literals & Booleans
   "true",
   "false",
   "null",
   "100",
   "0",
+  "1",
+  "10",
+  "3.14",
+  "999",
+  "hello",
+  "world",
+  "java",
+  "abc",
 ]);
 
 export const JAVADOC_REGISTRY: Record<string, JavadocEntry> = {
   // --- COLLECTIONS & INTERFACES ---
   PriorityQueue: {
     name: "PriorityQueue<E>",
-    category: "Collection",
+    category: "Collections",
     package: "java.util",
     signature: "public class PriorityQueue<E> extends AbstractQueue<E> implements Serializable",
     since: "Java 1.5",
@@ -93,15 +160,15 @@ export const JAVADOC_REGISTRY: Record<string, JavadocEntry> = {
       "Provides O(log n) time insertion and extraction of the minimum (or maximum) element, ideal for scheduling tasks by priority or Dijkstra's shortest path algorithm.",
     syntax:
       "PriorityQueue<Type> pq = new PriorityQueue<>(Comparator.comparing(Type::getPriority));",
-    codeExample: `// Min-Heap of tasks ordered by priority score
-PriorityQueue<Task> pq = new PriorityQueue<>(Comparator.comparingInt(Task::getPriority));
+    codeExample: `// Min-Heap of items ordered by priority score
+PriorityQueue<Process> pq = new PriorityQueue<>(Comparator.comparingInt(Process::getPriority));
 
-pq.offer(new Task("Low Priority", 5));
-pq.offer(new Task("High Priority", 1)); // Highest priority (lowest number)
+pq.offer(new Process("Job-Low", 5));
+pq.offer(new Process("Job-High", 1)); // Highest priority (lowest integer)
 
-Task highest = pq.poll(); // Returns "High Priority" task`,
+Process highest = pq.poll(); // Returns "Job-High"`,
     useCases: [
-      "Task scheduling engines (e.g. Quartz scheduler, OS process scheduling)",
+      "Task scheduling engines (e.g. OS process scheduling)",
       "Graph algorithms (Dijkstra's shortest path, Prim's MST)",
       "Top-K elements selection in streaming analytics",
     ],
@@ -147,7 +214,7 @@ Task highest = pq.poll(); // Returns "High Priority" task`,
 
   HashMap: {
     name: "HashMap<K,V>",
-    category: "Collection",
+    category: "Collections",
     package: "java.util",
     signature:
       "public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneable, Serializable",
@@ -159,12 +226,12 @@ Task highest = pq.poll(); // Returns "High Priority" task`,
       "Hash table based implementation of the Map interface. Provides constant-time O(1) performance for basic operations (get and put).",
     purpose: "Solves key-value data retrieval problems instantly using bucket hashing algorithms.",
     syntax: "Map<KeyType, ValueType> map = new HashMap<>();",
-    codeExample: `Map<String, User> userCache = new HashMap<>();
-userCache.put("usr_101", new User("Alice"));
-User user = userCache.get("usr_101"); // O(1) lookup`,
+    codeExample: `Map<String, Record> cache = new HashMap<>();
+cache.put("rec_101", new Record("Data"));
+Record rec = cache.get("rec_101"); // O(1) lookup`,
     useCases: [
       "In-memory caching of database lookup records",
-      "Indexing items by unique identifiers (e.g. UUID, User ID)",
+      "Indexing items by unique identifiers (e.g. UUID)",
       "Counting item frequencies in data processing pipelines",
     ],
     bestPractices: [
@@ -204,7 +271,7 @@ User user = userCache.get("usr_101"); // O(1) lookup`,
 
   ArrayList: {
     name: "ArrayList<E>",
-    category: "Collection",
+    category: "Collections",
     package: "java.util",
     signature:
       "public class ArrayList<E> extends AbstractList<E> implements List<E>, RandomAccess, Cloneable, Serializable",
@@ -217,10 +284,10 @@ User user = userCache.get("usr_101"); // O(1) lookup`,
     purpose:
       "Provides dynamic fast indexed access O(1) to elements compared to fixed-size primitive arrays.",
     syntax: "List<Type> list = new ArrayList<>();",
-    codeExample: `List<String> orders = new ArrayList<>();
-orders.add("Order-A");
-orders.add("Order-B");
-String first = orders.get(0); // O(1) fast random access`,
+    codeExample: `List<String> items = new ArrayList<>();
+items.add("Item-A");
+items.add("Item-B");
+String first = items.get(0); // O(1) fast random access`,
     useCases: [
       "Storing contiguous dynamic lists",
       "Passing collections between API layers",
@@ -256,7 +323,7 @@ String first = orders.get(0); // O(1) fast random access`,
 
   Comparator: {
     name: "Comparator<T>",
-    category: "Interface",
+    category: "Interfaces",
     package: "java.util",
     signature: "@FunctionalInterface public interface Comparator<T>",
     since: "Java 1.2",
@@ -269,11 +336,11 @@ String first = orders.get(0); // O(1) fast random access`,
       "Decouples ordering logic from domain classes, allowing multiple custom sorting rules.",
     syntax: "Comparator<Type> comp = Comparator.comparing(Type::getField);",
     codeExample: `// Multi-field comparison pipeline
-Comparator<User> userComparator = Comparator
-    .comparing(User::getRole)
-    .thenComparing(User::getName);
+Comparator<Record> comp = Comparator
+    .comparing(Record::getGroup)
+    .thenComparing(Record::getId);
 
-users.sort(userComparator);`,
+records.sort(comp);`,
     useCases: [
       "Sorting lists dynamically",
       "Configuring PriorityQueue ordering",
@@ -309,7 +376,7 @@ users.sort(userComparator);`,
 
   Stream: {
     name: "Stream<T>",
-    category: "Stream API",
+    category: "Streams",
     package: "java.util.stream",
     signature: "public interface Stream<T> extends BaseStream<T, Stream<T>>",
     since: "Java 8",
@@ -321,9 +388,9 @@ users.sort(userComparator);`,
     purpose:
       "Enables declarative functional programming over collections without mutating underlying data sources.",
     syntax: "list.stream().filter(...).map(...).toList();",
-    codeExample: `List<String> activeUserEmails = users.stream()
-    .filter(User::isActive)
-    .map(User::getEmail)
+    codeExample: `List<String> activeEmails = entityList.stream()
+    .filter(Entity::isActive)
+    .map(Entity::getEmail)
     .toList();`,
     useCases: [
       "Data filtering and mapping",
@@ -354,62 +421,6 @@ users.sort(userComparator);`,
     ],
   },
 
-  // --- LANGUAGE CONSTRUCTS ---
-  for: {
-    name: "for",
-    category: "Java Language Keyword",
-    syntax:
-      "for (initialization; condition; update) { ... } | for (Type item : collection) { ... }",
-    overview:
-      "Iteration control flow construct that repeatedly executes a block of code while a boolean condition remains true or over an Iterable collection.",
-    purpose:
-      "Eliminates repetitive manual iteration code, providing clean bounded loops and iterator loops.",
-    codeExample: `// Enhanced for-each loop over List
-for (String item : cartItems) {
-    processCheckout(item);
-}`,
-    useCases: ["Iterating arrays and collections", "Executing fixed iteration counters"],
-    bestPractices: ["Prefer enhanced for-each loops over indexed loops when index is not needed."],
-    commonMistakes: [
-      "Modifying collection structure inside enhanced for loop (causes ConcurrentModificationException).",
-    ],
-    interviewQuestions: [
-      {
-        question: "How does the enhanced for-each loop work under the hood for collections?",
-        answer:
-          "The Java compiler converts enhanced for-each loops over Collections into standard Iterator calls (hasNext() and next()).",
-      },
-    ],
-    relatedTopics: ["while", "break", "continue", "Iterable"],
-  },
-
-  if: {
-    name: "if",
-    category: "Java Language Keyword",
-    syntax: "if (booleanCondition) { /* branch */ } else { /* fallback */ }",
-    overview:
-      "Conditional branch statement that executes code based on whether a boolean expression evaluates to true.",
-    purpose: "Allows software to make dynamic decisions based on runtime state.",
-    codeExample: `if (user.getBalance() >= price) {
-    deductBalance(price);
-} else {
-    throw new InsufficientFundsException();
-}`,
-    useCases: ["Evaluating business rules", "Guard clauses at top of methods"],
-    bestPractices: [
-      "Use early returns (guard clauses) to eliminate deep nested if/else statements.",
-    ],
-    commonMistakes: ["Using assignment `=` instead of equality check `==` inside conditions."],
-    interviewQuestions: [
-      {
-        question: "What is a guard clause?",
-        answer:
-          "A guard clause is an early `if` return statement at the start of a method that handles invalid inputs or edge cases early.",
-      },
-    ],
-    relatedTopics: ["switch", "else", "boolean"],
-  },
-
   synchronized: {
     name: "synchronized",
     category: "Concurrency",
@@ -438,38 +449,92 @@ for (String item : cartItems) {
     relatedTopics: ["volatile", "ReentrantLock", "Thread"],
     methods: [],
   },
+
+  JVM: {
+    name: "JVM (Java Virtual Machine)",
+    category: "JVM",
+    package: "java.lang",
+    signature: "Java Virtual Machine Specification",
+    since: "JDK 1.0",
+    officialDocUrl: "https://docs.oracle.com/javase/specs/jvms/se21/html/index.html",
+    overview:
+      "An abstract computing machine that enables a computer to run a Java program. It loads bytecode, verifies code, and executes it via JIT compilation.",
+    purpose:
+      "Provides platform independence ('Write Once, Run Anywhere') and automated memory management.",
+    syntax: "java -jar application.jar",
+    codeExample: `// Memory layout managed by JVM
+// Heap: Object allocations
+// Stack: Primitive variables & stack frames
+// Metaspace: Class metadata`,
+    useCases: [
+      "Executing compiled .class bytecode",
+      "Automated Garbage Collection",
+      "JIT execution",
+    ],
+    bestPractices: [
+      "Tune JVM heap parameters (-Xms, -Xmx) according to production workload demands.",
+    ],
+    commonMistakes: ["Ignoring Garbage Collection logs when diagnosing latency spikes."],
+    interviewQuestions: [
+      {
+        question: "What are the main memory areas inside the JVM?",
+        answer:
+          "Heap Memory (Objects), Stack Memory (Frames & Primitives), Metaspace (Class Metadata), Program Counter (PC) Register, Native Method Stack.",
+      },
+    ],
+    relatedTopics: ["Garbage Collector", "Bytecode", "JIT Compiler", "Class Loader"],
+  },
 };
 
 export function lookupJavadoc(word: string, topicTitle?: string): JavadocEntry | null {
-  const clean = word
-    .trim()
-    .replace(/^[@()]+/g, "")
-    .replace(/[<>()[\];,:]+/g, "");
+  const raw = word.trim();
+  const clean = raw.replace(/^[@()]+/g, "").replace(/[<>()[\];,:]+/g, "");
 
-  // STEP 6: Check Blacklist (DO NOT create popups for variables, loop indexes, literals)
-  if (NON_KEYWORD_BLACKLIST.has(clean.toLowerCase())) {
-    return null; // Suppress popup
+  const cleanLower = clean.toLowerCase();
+
+  // STEP 6: Hard Rules to Suppress Non-Educational Tokens
+  if (
+    STEP6_BLACKLIST.has(cleanLower) ||
+    STEP6_BLACKLIST.has(raw.toLowerCase()) ||
+    cleanLower.endsWith(".java") ||
+    cleanLower.endsWith(".class") ||
+    /^["']/.test(clean) ||
+    /^\d+(\.\d+)?$/.test(clean) ||
+    cleanLower.startsWith("java.") ||
+    cleanLower.startsWith("javax.") ||
+    cleanLower.startsWith("import ") ||
+    cleanLower.startsWith("package ")
+  ) {
+    return null; // DO NOT create popup
   }
 
   // 1. Direct registry lookup
   if (JAVADOC_REGISTRY[clean]) return JAVADOC_REGISTRY[clean];
-  if (JAVADOC_REGISTRY[word.trim()]) return JAVADOC_REGISTRY[word.trim()];
+  if (JAVADOC_REGISTRY[raw]) return JAVADOC_REGISTRY[raw];
 
   // 2. Case-insensitive match
-  const matchKey = Object.keys(JAVADOC_REGISTRY).find(
-    (k) => k.toLowerCase() === clean.toLowerCase(),
-  );
+  const matchKey = Object.keys(JAVADOC_REGISTRY).find((k) => k.toLowerCase() === cleanLower);
   if (matchKey && JAVADOC_REGISTRY[matchKey]) {
     return JAVADOC_REGISTRY[matchKey];
   }
 
-  // 3. Educational fallback for Java constructs & standard library classes
+  // 3. Fallback for valid Java technical constructs (Classes, Interfaces, Annotations, Keywords)
   const isStandardLib = /^[A-Z][a-zA-Z0-9]+$/.test(clean);
-  const formattedName = clean.length > 0 ? clean : word;
+  const formattedName = clean.length > 0 ? clean : raw;
+
+  // Filter out arbitrary user class names or method calls (STEP 6)
+  if (
+    !isStandardLib &&
+    !/^(if|else|switch|case|for|while|do|break|continue|return|class|interface|enum|record|sealed|permits|extends|implements|try|catch|finally|throw|throws|synchronized|volatile|transient|this|super|instanceof|static|final|public|private|protected|int|long|double|boolean|char|float|byte|short)$/.test(
+      cleanLower,
+    )
+  ) {
+    return null; // Suppress non-educational arbitrary identifier
+  }
 
   return {
     name: formattedName,
-    category: isStandardLib ? "Collection" : "Java Language Keyword",
+    category: isStandardLib ? "Collections" : "Language Keyword",
     package: isStandardLib ? "java.util / java.lang" : undefined,
     signature: isStandardLib ? `public class ${formattedName}` : `keyword ${formattedName}`,
     since: "JDK 1.0+",

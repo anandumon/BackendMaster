@@ -5,98 +5,7 @@ import { Copy, Check, Terminal, BookOpen } from "lucide-react";
 import { lookupJavadoc, type JavadocEntry } from "@/lib/javadoc-db";
 import { JavadocModal } from "@/components/JavadocModal";
 
-// Core Master Set of Java Technical Terms
-const ALL_JAVA_KEYWORDS = [
-  "PriorityQueue",
-  "HashMap",
-  "HashSet",
-  "ArrayList",
-  "LinkedList",
-  "TreeMap",
-  "TreeSet",
-  "ConcurrentHashMap",
-  "BlockingQueue",
-  "ArrayDeque",
-  "Vector",
-  "Hashtable",
-  "Map",
-  "Set",
-  "List",
-  "Queue",
-  "Deque",
-  "Collection",
-  "Iterable",
-  "Comparable",
-  "Comparator",
-  "Stream",
-  "Collectors",
-  "Optional",
-  "Predicate",
-  "Consumer",
-  "Function",
-  "Supplier",
-  "Thread",
-  "ExecutorService",
-  "ForkJoinPool",
-  "CompletableFuture",
-  "ReentrantLock",
-  "Semaphore",
-  "CountDownLatch",
-  "Exception",
-  "RuntimeException",
-  "IOException",
-  "NullPointerException",
-  "IllegalArgumentException",
-  "JVM",
-  "JIT",
-  "GC",
-  "ClassLoader",
-  "@Override",
-  "@Component",
-  "@Service",
-  "@Repository",
-  "@RestController",
-  "@Entity",
-  "@Autowired",
-  "@Bean",
-  "@Transactional",
-  "if",
-  "else",
-  "switch",
-  "case",
-  "for",
-  "while",
-  "do",
-  "break",
-  "continue",
-  "return",
-  "class",
-  "interface",
-  "enum",
-  "record",
-  "sealed",
-  "permits",
-  "extends",
-  "implements",
-  "try",
-  "catch",
-  "finally",
-  "throw",
-  "throws",
-  "synchronized",
-  "volatile",
-  "transient",
-  "this",
-  "super",
-  "instanceof",
-  "static",
-  "final",
-  "public",
-  "private",
-  "protected",
-];
-
-// Helper to determine topic-relevant keywords (STEP 1, STEP 2 & STEP 8)
+// Helper to determine topic-relevant keywords (STEP 1, STEP 2 & STEP 7)
 function getTopicKeywords(topicTitle?: string): Set<string> {
   const normalized = (topicTitle || "").toLowerCase();
   const relevant = new Set<string>();
@@ -183,25 +92,21 @@ function getTopicKeywords(topicTitle?: string): Set<string> {
       "Callable",
     ].forEach((k) => relevant.add(k));
   }
-  // If topic is Control Flow / Loops
+  // If topic is JVM / Bytecode
   else if (
-    normalized.includes("control") ||
-    normalized.includes("flow") ||
-    normalized.includes("loop") ||
-    normalized.includes("conditional")
+    normalized.includes("jvm") ||
+    normalized.includes("garbage") ||
+    normalized.includes("bytecode")
   ) {
     [
-      "if",
-      "else",
-      "switch",
-      "case",
-      "for",
-      "while",
-      "do",
-      "break",
-      "continue",
-      "return",
-      "yield",
+      "JVM",
+      "JIT Compiler",
+      "Garbage Collector",
+      "Class Loader",
+      "Bytecode",
+      "Heap",
+      "Stack",
+      "Metaspace",
     ].forEach((k) => relevant.add(k));
   }
   // Default fallback: Include major classes and annotations
@@ -234,12 +139,12 @@ function renderTextWithKeywords(
   text: string,
   onWordClick: (word: string) => void,
   topicKeywords: Set<string>,
+  seenKeywordsInSection: Set<string>,
 ): React.ReactNode[] {
   if (!text || typeof text !== "string") return [text];
 
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
-  let highlightCount = 0;
 
   // Build regex dynamically for relevant keywords
   const regexPattern = Array.from(topicKeywords)
@@ -252,11 +157,22 @@ function renderTextWithKeywords(
   let match: RegExpExecArray | null;
 
   while ((match = regex.exec(text)) !== null) {
-    // STEP 7 Density Cap: Max 8 highlights per text block
-    if (highlightCount >= 8) break;
-
     const matchText = match[0];
     const matchIndex = match.index;
+
+    // STEP 8: Highlight ONLY the FIRST occurrence of a keyword in the section!
+    if (seenKeywordsInSection.has(matchText.toLowerCase())) {
+      continue;
+    }
+
+    // STEP 6: Verify keyword is valid and educational before creating chip
+    const entry = lookupJavadoc(matchText);
+    if (!entry) {
+      continue;
+    }
+
+    // Mark keyword as seen in this section
+    seenKeywordsInSection.add(matchText.toLowerCase());
 
     if (matchIndex > lastIndex) {
       parts.push(text.substring(lastIndex, matchIndex));
@@ -270,14 +186,13 @@ function renderTextWithKeywords(
           onWordClick(matchText);
         }}
         className="font-mono text-[12px] font-bold px-1 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-300 dark:border-blue-800 hover:bg-blue-200 dark:hover:bg-blue-900 transition-all cursor-pointer inline-flex items-center gap-0.5 mx-0.5 shadow-2xs group"
-        title={`Click for Javadoc & Specification: ${matchText}`}
+        title={`Click for JavaDoc & Specification: ${matchText}`}
       >
         <span>{matchText}</span>
         <BookOpen className="h-2.5 w-2.5 opacity-60 group-hover:opacity-100 shrink-0 text-blue-600 dark:text-blue-400" />
       </span>,
     );
 
-    highlightCount++;
     lastIndex = matchIndex + matchText.length;
   }
 
@@ -292,10 +207,11 @@ function processChildren(
   children: React.ReactNode,
   onWordClick: (word: string) => void,
   topicKeywords: Set<string>,
+  seenKeywordsInSection: Set<string>,
 ): React.ReactNode {
   return React.Children.map(children, (child) => {
     if (typeof child === "string") {
-      return renderTextWithKeywords(child, onWordClick, topicKeywords);
+      return renderTextWithKeywords(child, onWordClick, topicKeywords, seenKeywordsInSection);
     }
     return child;
   });
@@ -305,6 +221,7 @@ export function Markdown({ children, topicTitle }: { children: string; topicTitl
   const [selectedEntry, setSelectedEntry] = useState<JavadocEntry | null>(null);
 
   const topicKeywords = useMemo(() => getTopicKeywords(topicTitle), [topicTitle]);
+  const seenKeywordsInSection = useMemo(() => new Set<string>(), [children]);
 
   const handleWordClick = (word: string) => {
     const entry = lookupJavadoc(word, topicTitle);
@@ -323,7 +240,7 @@ export function Markdown({ children, topicTitle }: { children: string; topicTitl
               className="text-xl font-bold text-foreground mt-6 mb-3 flex items-center gap-2 border-b border-border/60 pb-2"
               {...props}
             >
-              {processChildren(children, handleWordClick, topicKeywords)}
+              {processChildren(children, handleWordClick, topicKeywords, seenKeywordsInSection)}
             </h1>
           ),
           h2: ({ node, children, ...props }) => (
@@ -331,17 +248,17 @@ export function Markdown({ children, topicTitle }: { children: string; topicTitl
               className="text-lg font-bold text-foreground mt-5 mb-2.5 flex items-center gap-2 text-primary"
               {...props}
             >
-              {processChildren(children, handleWordClick, topicKeywords)}
+              {processChildren(children, handleWordClick, topicKeywords, seenKeywordsInSection)}
             </h2>
           ),
           h3: ({ node, children, ...props }) => (
             <h3 className="text-base font-semibold text-foreground mt-4 mb-2" {...props}>
-              {processChildren(children, handleWordClick, topicKeywords)}
+              {processChildren(children, handleWordClick, topicKeywords, seenKeywordsInSection)}
             </h3>
           ),
           h4: ({ node, children, ...props }) => (
             <h4 className="text-sm font-semibold text-foreground/90 mt-3 mb-1.5" {...props}>
-              {processChildren(children, handleWordClick, topicKeywords)}
+              {processChildren(children, handleWordClick, topicKeywords, seenKeywordsInSection)}
             </h4>
           ),
           p: ({ node, children, ...props }) => (
@@ -349,7 +266,7 @@ export function Markdown({ children, topicTitle }: { children: string; topicTitl
               className="mb-3 text-foreground/90 dark:text-muted-foreground leading-relaxed"
               {...props}
             >
-              {processChildren(children, handleWordClick, topicKeywords)}
+              {processChildren(children, handleWordClick, topicKeywords, seenKeywordsInSection)}
             </p>
           ),
           ul: ({ node, ...props }) => (
@@ -366,7 +283,7 @@ export function Markdown({ children, topicTitle }: { children: string; topicTitl
           ),
           li: ({ node, children, ...props }) => (
             <li className="leading-normal" {...props}>
-              {processChildren(children, handleWordClick, topicKeywords)}
+              {processChildren(children, handleWordClick, topicKeywords, seenKeywordsInSection)}
             </li>
           ),
           blockquote: ({ node, children, ...props }) => (
@@ -374,7 +291,7 @@ export function Markdown({ children, topicTitle }: { children: string; topicTitl
               className="border-l-4 border-primary/70 bg-primary/5 px-4 py-3 rounded-r-xl my-4 text-foreground/90 dark:text-muted-foreground italic"
               {...props}
             >
-              {processChildren(children, handleWordClick, topicKeywords)}
+              {processChildren(children, handleWordClick, topicKeywords, seenKeywordsInSection)}
             </blockquote>
           ),
           table: ({ node, ...props }) => (
@@ -387,7 +304,7 @@ export function Markdown({ children, topicTitle }: { children: string; topicTitl
               className="bg-muted/80 px-3.5 py-2.5 font-bold text-foreground border-b border-border"
               {...props}
             >
-              {processChildren(children, handleWordClick, topicKeywords)}
+              {processChildren(children, handleWordClick, topicKeywords, seenKeywordsInSection)}
             </th>
           ),
           td: ({ node, children, ...props }) => (
@@ -395,7 +312,7 @@ export function Markdown({ children, topicTitle }: { children: string; topicTitl
               className="px-3.5 py-2.5 border-b border-border/50 text-foreground/90 dark:text-muted-foreground"
               {...props}
             >
-              {processChildren(children, handleWordClick, topicKeywords)}
+              {processChildren(children, handleWordClick, topicKeywords, seenKeywordsInSection)}
             </td>
           ),
           code({ node, inline, className, children, ...props }: any) {
@@ -411,13 +328,24 @@ export function Markdown({ children, topicTitle }: { children: string; topicTitl
               return <CodeBlock language={match?.[1] || "text"} value={codeString} />;
             }
 
-            // Inline code chip: Clickable Javadoc trigger
+            // STEP 6: Check if inline code is a valid educational Java concept
+            const entry = lookupJavadoc(codeString, topicTitle);
+            if (!entry) {
+              // Plain inline code tag for non-educational tokens (variables, example classes, literals)
+              return (
+                <code className="font-mono text-xs px-1.5 py-0.5 rounded bg-muted/60 text-foreground border border-border/60">
+                  {children}
+                </code>
+              );
+            }
+
+            // Interactive clickable chip for valid educational Java concept
             return (
               <button
                 type="button"
                 onClick={() => handleWordClick(codeString)}
                 className="inline-flex items-center gap-1 font-mono text-[12px] font-semibold px-2 py-0.5 my-0.5 rounded-md border border-blue-300 dark:border-blue-800 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900 transition-all cursor-pointer group shadow-2xs"
-                title="Click to view Javadoc & Specification"
+                title="Click to view JavaDoc & Specification"
               >
                 <span>{children}</span>
                 <BookOpen className="h-3 w-3 opacity-60 group-hover:opacity-100 shrink-0 text-blue-600 dark:text-blue-400" />
