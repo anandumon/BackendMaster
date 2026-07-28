@@ -447,7 +447,7 @@ function LessonContent() {
                     sectionRefs.current[idx] = el;
                   }}
                 >
-                  <Markdown>{value}</Markdown>
+                  <Markdown topicTitle={topic.title}>{value}</Markdown>
                 </SectionCard>
               );
             })}
@@ -590,7 +590,8 @@ function McqList({
           </span>
           {answeredCount > 0 && (
             <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium">
-              Score: {correctCount} / {answeredCount} ({Math.round((correctCount / answeredCount) * 100)}%)
+              Score: {correctCount} / {answeredCount} (
+              {Math.round((correctCount / answeredCount) * 100)}%)
             </span>
           )}
         </div>
