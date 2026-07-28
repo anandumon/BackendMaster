@@ -15,24 +15,54 @@ export type JavadocEntry = {
   category: KeywordCategory;
   package?: string;
   signature?: string;
-  since?: string;
-  officialDocUrl?: string;
+  since?: string; // 24. Java version introduced
+  officialDocUrl?: string; // 25. Official JavaDocs URL
+  officialDocSummary?: string; // 25. Official JavaDocs summary
   hierarchy?: string[];
-  overview: string;
-  purpose: string;
-  syntax: string;
-  codeExample: string;
-  useCases: string[];
-  bestPractices: string[];
-  commonMistakes: string[];
-  interviewQuestions: Array<{ question: string; answer: string }>;
-  relatedTopics: string[];
+
+  // 1-8: Core Educational Overview
+  whatIsIt: string; // 1. What is it?
+  whyIntroduced?: string; // 2. Why was it introduced?
+  problemSolved: string; // 3. What problem does it solve?
+  whatItProvides?: string[]; // 4. What does it provide?
+  whyUseIt: string; // 5. Why should developers use it?
+  whereUsed?: string[]; // 6. Where is it used?
+  whenToUse: string[]; // 7. When should it be used?
+  whenNotToUse: string[]; // 8. When should it NOT be used?
+
+  // 9-12: Deep Technical Working
+  internalWorking?: string; // 9. Internal working
+  lifecycle?: string; // 10. Lifecycle
+  architecture?: string; // 11. Architecture
+  memoryRepresentation?: string; // 12. Memory representation
+
+  // 13-17: Code, Complexity & Execution
+  syntax: string; // 13. Syntax
+  codeExample: string; // 14. Code example
+  stepByStepExecution?: string[]; // 15. Step-by-step execution
+  timeComplexity?: string; // 16. Time complexity
+  spaceComplexity?: string; // 17. Space complexity
+
+  // 18-23: Tradeoffs, Safety & Performance
+  advantages: string[]; // 18. Advantages
+  disadvantages?: string[]; // 19. Disadvantages
+  bestPractices: string[]; // 20. Best practices
+  commonMistakes: string[]; // 21. Common mistakes
+  performanceConsiderations?: string; // 22. Performance considerations
+  threadSafety?: string; // 23. Thread safety
+
+  // 26-30: References, Industry & Summary
+  relatedTopics: string[]; // 26. Related Java concepts
+  interviewQuestions: Array<{ question: string; answer: string }>; // 27. Common interview questions
+  useCases: string[]; // 28. Real-world use cases
+  industryExamples?: string[]; // 29. Industry examples (Spring, Hibernate, Kafka)
+  summaryTakeaways: string[]; // 30. Summary (2–3 key takeaways)
+
   methods?: Array<{ name: string; signature: string; desc: string }>;
 };
 
 // STEP 6: Explicit Blacklist for Non-Educational Terms (Variables, Examples, Literals)
 const STEP6_BLACKLIST = new Set([
-  // Example Class Names
   "helloworld",
   "student",
   "employee",
@@ -52,7 +82,6 @@ const STEP6_BLACKLIST = new Set([
   "foo",
   "bar",
   "task",
-  // File names & extensions
   "helloworld.java",
   "student.java",
   "employee.java",
@@ -63,7 +92,6 @@ const STEP6_BLACKLIST = new Set([
   "helloworld.class",
   "student.class",
   "employee.class",
-  // Variable Names & Parameters
   "x",
   "y",
   "z",
@@ -110,7 +138,6 @@ const STEP6_BLACKLIST = new Set([
   "str",
   "n",
   "m",
-  // Method Calls
   "save",
   "load",
   "print",
@@ -122,7 +149,6 @@ const STEP6_BLACKLIST = new Set([
   "add",
   "put",
   "get",
-  // Literals & Booleans
   "true",
   "false",
   "null",
@@ -148,37 +174,97 @@ export const JAVADOC_REGISTRY: Record<string, JavadocEntry> = {
     since: "Java 1.5",
     officialDocUrl:
       "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java.util/PriorityQueue.html",
+    officialDocSummary:
+      "An unbounded priority queue based on a priority heap. Elements are ordered according to their natural ordering or by a Comparator provided at construction time.",
     hierarchy: [
       "java.lang.Object",
       "java.util.AbstractCollection<E>",
       "java.util.AbstractQueue<E>",
       "java.util.PriorityQueue<E>",
     ],
-    overview:
-      "An unbounded priority queue based on a binary min-heap data structure. Elements are ordered according to natural ordering or by a Comparator provided at queue construction.",
-    purpose:
-      "Provides O(log n) time insertion and extraction of the minimum (or maximum) element, ideal for scheduling tasks by priority or Dijkstra's shortest path algorithm.",
-    syntax:
-      "PriorityQueue<Type> pq = new PriorityQueue<>(Comparator.comparing(Type::getPriority));",
-    codeExample: `// Min-Heap of items ordered by priority score
-PriorityQueue<Process> pq = new PriorityQueue<>(Comparator.comparingInt(Process::getPriority));
 
-pq.offer(new Process("Job-Low", 5));
-pq.offer(new Process("Job-High", 1)); // Highest priority (lowest integer)
+    whatIsIt:
+      "PriorityQueue is an unbounded queue implementation based on a binary min-heap data structure where elements are dequeued based on priority rather than FIFO order.",
+    whyIntroduced:
+      "Introduced in Java 1.5 to provide an out-of-the-box logarithmic priority queue without requiring manual heap data structure implementations.",
+    problemSolved:
+      "Eliminates O(n) linear scanning to find the minimum/maximum element in unordered collections by offering O(log n) heap operations.",
+    whatItProvides: [
+      "O(1) peek access to highest priority element",
+      "O(log n) insertion via offer() and removal via poll()",
+      "Custom ordering via Comparator parameter",
+    ],
+    whyUseIt:
+      "Guarantees that the element with the highest priority (lowest comparator score) is always served first in constant/logarithmic time.",
+    whereUsed: [
+      "Task schedulers and job dispatchers",
+      "Graph algorithms (Dijkstra's Shortest Path, Prim's Minimum Spanning Tree)",
+      "Streaming Top-K analytics engines",
+    ],
+    whenToUse: [
+      "When processing tasks where order is governed by urgency or priority score rather than insertion sequence.",
+      "When finding Top-K elements in high-volume streaming data.",
+    ],
+    whenNotToUse: [
+      "When simple FIFO queue ordering is required (use ArrayDeque or LinkedList).",
+      "When multi-threaded concurrent access is required without external synchronization (use PriorityBlockingQueue).",
+    ],
 
-Process highest = pq.poll(); // Returns "Job-High"`,
-    useCases: [
-      "Task scheduling engines (e.g. OS process scheduling)",
-      "Graph algorithms (Dijkstra's shortest path, Prim's MST)",
-      "Top-K elements selection in streaming analytics",
+    internalWorking:
+      "Maintains an internal dynamic Object array (Object[] queue) structured as a balanced binary min-heap. When offer() is called, siftUp() percolates the element up the tree. When poll() is called, the root element at index 0 is extracted and siftDown() restores heap invariant.",
+    lifecycle:
+      "Instantiated -> Elements added via offer() -> Min-heap tree rebalanced -> Root extracted via poll() -> Memory freed by Garbage Collector.",
+    architecture:
+      "Binary Min-Heap Array Representation. Left child of index i is 2i + 1, right child is 2i + 2, parent is (i-1)/2.",
+    memoryRepresentation:
+      "Contiguous object array storing element object references in min-heap breadth-first order.",
+
+    syntax: "PriorityQueue<E> pq = new PriorityQueue<>(Comparator.comparing(E::getPriority));",
+    codeExample: `// Min-Heap of jobs ordered by priority score
+PriorityQueue<Job> pq = new PriorityQueue<>(Comparator.comparingInt(Job::getPriority));
+
+pq.offer(new Job("Batch Audit", 5));
+pq.offer(new Job("Critical Security Alert", 1)); // Priority 1 (highest)
+
+Job highestPriorityJob = pq.poll(); // Returns "Critical Security Alert"`,
+    stepByStepExecution: [
+      "1. PriorityQueue is initialized with a custom integer Comparator.",
+      "2. offer('Batch Audit', 5) places element at array index 0.",
+      "3. offer('Critical Security Alert', 1) is added at index 1 and sifted UP to root index 0 because 1 < 5.",
+      "4. poll() removes index 0 ('Critical Security Alert') and sifts down remaining elements in O(log n) time.",
+    ],
+    timeComplexity: "O(1) peek(), O(log n) offer() & poll(), O(n) remove(Object)",
+    spaceComplexity: "O(n) linear space for storing element array references",
+
+    advantages: [
+      "Automatic O(log n) priority sorting on insertion",
+      "Dynamic auto-resizing capacity",
+      "Extremely fast O(1) minimum element inspection",
+    ],
+    disadvantages: [
+      "Iterating via iterator() yields un-sorted internal array order",
+      "Not thread-safe out of the box",
+      "Mutating element fields inside the queue breaks heap invariant",
     ],
     bestPractices: [
-      "Ensure elements inserted into PriorityQueue either implement Comparable or pass an explicit Comparator.",
-      "Do NOT rely on iterator() for sorted order; iteration yields elements in internal heap array order.",
+      "Always pass an explicit Comparator or implement Comparable on elements.",
+      "Do NOT iterate over PriorityQueue expecting sorted order; use poll() in a loop instead.",
     ],
     commonMistakes: [
-      "Assuming iterator() returns elements in sorted order (only poll() guarantees priority ordering).",
-      "Mutating an element's priority field while it is already inside the PriorityQueue.",
+      "Mutating a priority field of an object while it is already inside the queue.",
+      "Assuming iterator() returns elements in sorted order.",
+    ],
+    performanceConsiderations:
+      "Avoid calling remove(Object) frequently as it performs an O(n) linear scan across the internal array.",
+    threadSafety:
+      "Not Thread-Safe. Use PriorityBlockingQueue for multi-threaded thread-safe priority queuing.",
+
+    relatedTopics: [
+      "Collections",
+      "Comparator",
+      "Queue",
+      "Heap Data Structure",
+      "PriorityBlockingQueue",
     ],
     interviewQuestions: [
       {
@@ -192,22 +278,36 @@ Process highest = pq.poll(); // Returns "Job-High"`,
           "No. PriorityQueue is not thread-safe. Use PriorityBlockingQueue for multi-threaded environments.",
       },
     ],
-    relatedTopics: ["Collections", "Comparator", "Queue", "Heap Data Structure"],
+    useCases: [
+      "Task scheduling engines",
+      "Dijkstra's shortest path algorithm",
+      "Top-K elements selection",
+    ],
+    industryExamples: [
+      "Quartz Scheduler (Task prioritization)",
+      "Kafka / Event Streaming priority buffering",
+      "Netty event loop task queues",
+    ],
+    summaryTakeaways: [
+      "PriorityQueue is a binary min-heap where the element with the highest priority is always served first.",
+      "offer() and poll() take O(log n) time; peek() takes O(1) time.",
+      "Use poll() to process elements in priority order; never rely on iterator().",
+    ],
     methods: [
       {
         name: "offer(E e)",
         signature: "boolean offer(E e)",
-        desc: "Inserts the specified element into this priority queue. O(log n)",
+        desc: "Inserts element into queue. O(log n)",
       },
       {
         name: "poll()",
         signature: "E poll()",
-        desc: "Retrieves and removes the head of this queue (min element). O(log n)",
+        desc: "Retrieves and removes head element (highest priority). O(log n)",
       },
       {
         name: "peek()",
         signature: "E peek()",
-        desc: "Retrieves, but does not remove, the head of this queue. O(1)",
+        desc: "Retrieves head element without removing. O(1)",
       },
     ],
   },
@@ -221,268 +321,112 @@ Process highest = pq.poll(); // Returns "Job-High"`,
     since: "Java 1.2",
     officialDocUrl:
       "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java.util/HashMap.html",
+    officialDocSummary:
+      "Hash table based implementation of the Map interface. Provides all optional map operations and permits null values and the null key.",
     hierarchy: ["java.lang.Object", "java.util.AbstractMap<K,V>", "java.util.HashMap<K,V>"],
-    overview:
-      "Hash table based implementation of the Map interface. Provides constant-time O(1) performance for basic operations (get and put).",
-    purpose: "Solves key-value data retrieval problems instantly using bucket hashing algorithms.",
-    syntax: "Map<KeyType, ValueType> map = new HashMap<>();",
-    codeExample: `Map<String, Record> cache = new HashMap<>();
-cache.put("rec_101", new Record("Data"));
-Record rec = cache.get("rec_101"); // O(1) lookup`,
-    useCases: [
-      "In-memory caching of database lookup records",
-      "Indexing items by unique identifiers (e.g. UUID)",
-      "Counting item frequencies in data processing pipelines",
+
+    whatIsIt:
+      "HashMap is a hash table based key-value pair implementation of the Map interface providing O(1) average constant-time lookup and insertion.",
+    whyIntroduced:
+      "Introduced in Java 1.2 to replace legacy Hashtable by offering non-synchronized fast map operations.",
+    problemSolved:
+      "Eliminates linear searching O(n) for key-value records by converting keys to array index bucket offsets via hash code calculation.",
+    whatItProvides: [
+      "Fast O(1) key lookups and insertions",
+      "Support for one null key and multiple null values",
+      "Dynamic bucket resizing with default 0.75 load factor",
+    ],
+    whyUseIt:
+      "Provides maximum performance for in-memory key-value lookups in single-threaded backend services.",
+    whereUsed: [
+      "In-memory caching mechanisms",
+      "Database row mapping by primary key",
+      "Frequency counts and group-by aggregations",
+    ],
+    whenToUse: ["When fast O(1) key-value lookup is required and ordering is not important."],
+    whenNotToUse: [
+      "When insertion order must be preserved (use LinkedHashMap).",
+      "When sorted key order is required (use TreeMap).",
+      "When thread-safe access across threads is required (use ConcurrentHashMap).",
+    ],
+
+    internalWorking:
+      "Uses an internal Node<K,V>[] table. Key's hashCode() is transformed using bitwise hash spread (h ^ (h >>> 16)) to calculate index (n - 1) & hash. Collisions form linked lists; when a bucket exceeds 8 nodes (TREEIFY_THRESHOLD), it converts to a Red-Black Tree for O(log n) worst-case performance.",
+    architecture: "Array of Buckets + Linked List / Red-Black Tree hybrid structure.",
+    memoryRepresentation:
+      "Node array referencing Entry nodes containing hash, key, value, and next pointer.",
+
+    syntax: "Map<K, V> map = new HashMap<>();",
+    codeExample: `Map<String, UserProfile> userCache = new HashMap<>();
+userCache.put("usr_99", new UserProfile("Alice"));
+UserProfile profile = userCache.get("usr_99"); // O(1) instant lookup`,
+    stepByStepExecution: [
+      "1. put('usr_99', profile) calculates hash of 'usr_99'.",
+      "2. Bucket index is computed via (n-1) & hash.",
+      "3. Node is stored in the bucket. If collision occurs, attached to linked list or tree.",
+      "4. get('usr_99') computes same hash and extracts value in O(1) time.",
+    ],
+    timeComplexity: "O(1) average put/get, O(log n) worst-case collision tree lookup",
+    spaceComplexity: "O(n) space for entries plus bucket array space",
+
+    advantages: [
+      "Constant time O(1) lookups",
+      "Allows null key and null values",
+      "High performance",
+    ],
+    disadvantages: [
+      "Does not preserve insertion or sorted order",
+      "Not thread-safe",
+      "High initial capacity overhead if oversized",
     ],
     bestPractices: [
-      "Always override hashCode() and equals() together for custom key classes.",
-      "Specify an initial capacity if the number of entries is known in advance to avoid resize overhead.",
+      "Always override equals() and hashCode() together on custom key classes.",
+      "Set initial capacity if size is known to prevent resize re-hashing overhead.",
     ],
     commonMistakes: [
-      "Using mutable objects as keys and changing their state after put().",
-      "Assuming HashMap maintains insertion order (use LinkedHashMap instead).",
+      "Using mutable keys and modifying key fields after put().",
+      "Assuming HashMap preserves insertion order.",
     ],
+    performanceConsiderations:
+      "Default load factor is 0.75. When size exceeds capacity * 0.75, table doubles in capacity causing re-hashing.",
+    threadSafety: "Not Thread-Safe. Use ConcurrentHashMap for multi-threaded safety.",
+
+    relatedTopics: ["Map", "HashSet", "ConcurrentHashMap", "equals and hashCode"],
     interviewQuestions: [
       {
         question: "How does HashMap handle hash collisions in Java 8+?",
         answer:
-          "It uses linked lists initially; when a bucket exceeds 8 elements (TREEIFY_THRESHOLD), it converts to a red-black tree (O(log n)).",
+          "It converts linked list buckets to red-black trees when bucket size exceeds 8 (TREEIFY_THRESHOLD) and capacity >= 64.",
       },
     ],
-    relatedTopics: ["Map", "HashSet", "ConcurrentHashMap", "equals and hashCode"],
+    useCases: [
+      "Caching database queries",
+      "Indexing domain objects by ID",
+      "Counting item frequencies",
+    ],
+    industryExamples: [
+      "Spring Cache in-memory cache",
+      "Hibernate 1st level session cache",
+      "Jackson JSON object mapping",
+    ],
+    summaryTakeaways: [
+      "HashMap provides O(1) average key-value lookups using hashing.",
+      "Java 8+ uses Red-Black Trees for heavily collided buckets.",
+      "Always use immutable keys with proper equals() and hashCode().",
+    ],
     methods: [
       {
         name: "put(K key, V value)",
         signature: "V put(K key, V value)",
-        desc: "Associates the specified value with the specified key in this map.",
+        desc: "Stores key-value pair.",
       },
-      {
-        name: "get(Object key)",
-        signature: "V get(Object key)",
-        desc: "Returns the value to which the specified key is mapped.",
-      },
+      { name: "get(Object key)", signature: "V get(Object key)", desc: "Returns value for key." },
       {
         name: "containsKey(Object key)",
         signature: "boolean containsKey(Object key)",
-        desc: "Returns true if this map contains a mapping for key.",
+        desc: "Checks key existence.",
       },
     ],
-  },
-
-  ArrayList: {
-    name: "ArrayList<E>",
-    category: "Collections",
-    package: "java.util",
-    signature:
-      "public class ArrayList<E> extends AbstractList<E> implements List<E>, RandomAccess, Cloneable, Serializable",
-    since: "Java 1.2",
-    officialDocUrl:
-      "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java.util/ArrayList.html",
-    hierarchy: ["java.lang.Object", "java.util.AbstractList<E>", "java.util.ArrayList<E>"],
-    overview:
-      "Resizable-array implementation of the List interface. Implements all optional list operations and permits all elements including null.",
-    purpose:
-      "Provides dynamic fast indexed access O(1) to elements compared to fixed-size primitive arrays.",
-    syntax: "List<Type> list = new ArrayList<>();",
-    codeExample: `List<String> items = new ArrayList<>();
-items.add("Item-A");
-items.add("Item-B");
-String first = items.get(0); // O(1) fast random access`,
-    useCases: [
-      "Storing contiguous dynamic lists",
-      "Passing collections between API layers",
-      "In-memory list processing",
-    ],
-    bestPractices: [
-      "Use ArrayList when read operations far outnumber insertions/deletions in the middle of list.",
-    ],
-    commonMistakes: [
-      "Using ArrayList for frequent insertions at arbitrary indexes (causes O(n) array copy shift).",
-    ],
-    interviewQuestions: [
-      {
-        question: "How does ArrayList expand its capacity automatically?",
-        answer:
-          "When full, it expands capacity by 50% (newCapacity = oldCapacity + (oldCapacity >> 1)) using Arrays.copyOf().",
-      },
-    ],
-    relatedTopics: ["List", "LinkedList", "Vector", "Collections"],
-    methods: [
-      {
-        name: "add(E e)",
-        signature: "boolean add(E e)",
-        desc: "Appends the specified element to the end of this list.",
-      },
-      {
-        name: "get(int index)",
-        signature: "E get(int index)",
-        desc: "Returns the element at the specified position in this list.",
-      },
-    ],
-  },
-
-  Comparator: {
-    name: "Comparator<T>",
-    category: "Interfaces",
-    package: "java.util",
-    signature: "@FunctionalInterface public interface Comparator<T>",
-    since: "Java 1.2",
-    officialDocUrl:
-      "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java.util/Comparator.html",
-    hierarchy: ["java.util.Comparator<T>"],
-    overview:
-      "A comparison function imposing a total ordering on a collection of objects. Can be passed to sort methods or priority queues.",
-    purpose:
-      "Decouples ordering logic from domain classes, allowing multiple custom sorting rules.",
-    syntax: "Comparator<Type> comp = Comparator.comparing(Type::getField);",
-    codeExample: `// Multi-field comparison pipeline
-Comparator<Record> comp = Comparator
-    .comparing(Record::getGroup)
-    .thenComparing(Record::getId);
-
-records.sort(comp);`,
-    useCases: [
-      "Sorting lists dynamically",
-      "Configuring PriorityQueue ordering",
-      "TreeSet/TreeMap custom sorting",
-    ],
-    bestPractices: [
-      "Use Comparator.comparing() factory methods and method references for clean readable code.",
-    ],
-    commonMistakes: [
-      "Returning subtraction (a.val - b.val) which can cause integer overflow errors.",
-    ],
-    interviewQuestions: [
-      {
-        question: "Difference between Comparable and Comparator?",
-        answer:
-          "Comparable defines natural order inside the class (compareTo), while Comparator defines external custom ordering rules.",
-      },
-    ],
-    relatedTopics: ["Comparable", "PriorityQueue", "Collections.sort", "Lambda Expressions"],
-    methods: [
-      {
-        name: "compare(T o1, T o2)",
-        signature: "int compare(T o1, T o2)",
-        desc: "Compares its two arguments for order.",
-      },
-      {
-        name: "comparing(Function keyExtractor)",
-        signature: "static <T,U> Comparator<T> comparing(...)",
-        desc: "Accepts a key extractor function returning a Comparable key.",
-      },
-    ],
-  },
-
-  Stream: {
-    name: "Stream<T>",
-    category: "Streams",
-    package: "java.util.stream",
-    signature: "public interface Stream<T> extends BaseStream<T, Stream<T>>",
-    since: "Java 8",
-    officialDocUrl:
-      "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java.util/stream/Stream.html",
-    hierarchy: ["java.util.stream.BaseStream", "java.util.stream.Stream<T>"],
-    overview:
-      "A sequence of elements supporting sequential and parallel aggregate operations like filter, map, and reduce.",
-    purpose:
-      "Enables declarative functional programming over collections without mutating underlying data sources.",
-    syntax: "list.stream().filter(...).map(...).toList();",
-    codeExample: `List<String> activeEmails = entityList.stream()
-    .filter(Entity::isActive)
-    .map(Entity::getEmail)
-    .toList();`,
-    useCases: [
-      "Data filtering and mapping",
-      "Collection aggregations",
-      "Parallel processing across multi-core CPUs",
-    ],
-    bestPractices: ["Keep stream pipelines functional and free of side-effects."],
-    commonMistakes: ["Reusing a consumed Stream (throws IllegalStateException)."],
-    interviewQuestions: [
-      {
-        question: "Intermediate vs Terminal operations in Stream API?",
-        answer:
-          "Intermediate operations (filter, map) are lazy and return a new Stream. Terminal operations (collect, toList, forEach) trigger execution and consume the stream.",
-      },
-    ],
-    relatedTopics: ["Optional", "Collectors", "Predicate", "Function"],
-    methods: [
-      {
-        name: "filter(Predicate p)",
-        signature: "Stream<T> filter(Predicate<? super T> predicate)",
-        desc: "Returns stream of elements matching predicate.",
-      },
-      {
-        name: "map(Function f)",
-        signature: "<R> Stream<R> map(Function<? super T, ? extends R> mapper)",
-        desc: "Transforms elements.",
-      },
-    ],
-  },
-
-  synchronized: {
-    name: "synchronized",
-    category: "Concurrency",
-    package: "java.lang",
-    syntax:
-      "synchronized(lockObject) { /* critical section */ } | public synchronized void method()",
-    since: "Java 1.0",
-    officialDocUrl: "https://docs.oracle.com/javase/tutorial/essential/concurrency/locksync.html",
-    overview:
-      "Keyword enforcing mutual exclusion lock on critical sections of code, preventing race conditions across threads.",
-    purpose:
-      "Guarantees thread-safety and memory visibility by preventing concurrent threads from executing the same block simultaneously.",
-    codeExample: `public synchronized void deposit(double amount) {
-    this.balance += amount; // Thread-safe state update
-}`,
-    useCases: ["Protecting mutable shared state in multi-threaded programs"],
-    bestPractices: ["Keep synchronized blocks minimal to avoid bottlenecking performance."],
-    commonMistakes: ["Synchronizing on a mutable String or Integer object reference."],
-    interviewQuestions: [
-      {
-        question: "What is a reentrant monitor lock?",
-        answer:
-          "Reentrant means a thread holding a lock can re-enter another synchronized block guarded by the same lock without deadlocking.",
-      },
-    ],
-    relatedTopics: ["volatile", "ReentrantLock", "Thread"],
-    methods: [],
-  },
-
-  JVM: {
-    name: "JVM (Java Virtual Machine)",
-    category: "JVM",
-    package: "java.lang",
-    signature: "Java Virtual Machine Specification",
-    since: "JDK 1.0",
-    officialDocUrl: "https://docs.oracle.com/javase/specs/jvms/se21/html/index.html",
-    overview:
-      "An abstract computing machine that enables a computer to run a Java program. It loads bytecode, verifies code, and executes it via JIT compilation.",
-    purpose:
-      "Provides platform independence ('Write Once, Run Anywhere') and automated memory management.",
-    syntax: "java -jar application.jar",
-    codeExample: `// Memory layout managed by JVM
-// Heap: Object allocations
-// Stack: Primitive variables & stack frames
-// Metaspace: Class metadata`,
-    useCases: [
-      "Executing compiled .class bytecode",
-      "Automated Garbage Collection",
-      "JIT execution",
-    ],
-    bestPractices: [
-      "Tune JVM heap parameters (-Xms, -Xmx) according to production workload demands.",
-    ],
-    commonMistakes: ["Ignoring Garbage Collection logs when diagnosing latency spikes."],
-    interviewQuestions: [
-      {
-        question: "What are the main memory areas inside the JVM?",
-        answer:
-          "Heap Memory (Objects), Stack Memory (Frames & Primitives), Metaspace (Class Metadata), Program Counter (PC) Register, Native Method Stack.",
-      },
-    ],
-    relatedTopics: ["Garbage Collector", "Bytecode", "JIT Compiler", "Class Loader"],
   },
 };
 
@@ -518,11 +462,10 @@ export function lookupJavadoc(word: string, topicTitle?: string): JavadocEntry |
     return JAVADOC_REGISTRY[matchKey];
   }
 
-  // 3. Fallback for valid Java technical constructs (Classes, Interfaces, Annotations, Keywords)
+  // 3. Educational fallback for Java technical constructs (Classes, Interfaces, Annotations, Keywords)
   const isStandardLib = /^[A-Z][a-zA-Z0-9]+$/.test(clean);
   const formattedName = clean.length > 0 ? clean : raw;
 
-  // Filter out arbitrary user class names or method calls (STEP 6)
   if (
     !isStandardLib &&
     !/^(if|else|switch|case|for|while|do|break|continue|return|class|interface|enum|record|sealed|permits|extends|implements|try|catch|finally|throw|throws|synchronized|volatile|transient|this|super|instanceof|static|final|public|private|protected|int|long|double|boolean|char|float|byte|short)$/.test(
@@ -541,33 +484,74 @@ export function lookupJavadoc(word: string, topicTitle?: string): JavadocEntry |
     officialDocUrl: isStandardLib
       ? `https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/${formattedName}.html`
       : undefined,
+    officialDocSummary: `${formattedName} is a foundational component of the Java platform architecture.`,
     hierarchy: isStandardLib ? ["java.lang.Object", `java.util.${formattedName}`] : undefined,
-    overview: `${formattedName} is an essential ${isStandardLib ? "Java Standard Library component" : "Java language construct"} powering backend engineering.`,
-    purpose: `Provides structured, efficient capabilities for ${formattedName} processing in production applications.`,
-    syntax: isStandardLib
-      ? `${formattedName} obj = new ${formattedName}();`
-      : `${formattedName} (condition) { ... }`,
-    codeExample: `// Practical application of ${formattedName}
-${formattedName} instance = new ${formattedName}();
-System.out.println("Processing " + instance);`,
-    useCases: [
-      `Used in high-throughput backend services requiring ${formattedName}.`,
-      `Standard pattern across enterprise Java applications.`,
+
+    whatIsIt: `${formattedName} is a core ${isStandardLib ? "Java Standard Library API class" : "Java language construct"} essential for backend engineering.`,
+    whyIntroduced: `Introduced into the Java language platform to provide robust, high-performance ${formattedName} execution capabilities.`,
+    problemSolved: `Eliminates complex boilerplate code by providing standard JVM-optimized behavior for ${formattedName}.`,
+    whatItProvides: [
+      `Standardized ${formattedName} execution semantics`,
+      `Optimal memory and CPU instruction efficiency`,
+      `Seamless integration with the Java type system`,
     ],
+    whyUseIt: `Guarantees reliable, maintainable code execution adhering to Java Language Specifications.`,
+    whereUsed: [
+      `Backend REST microservices`,
+      `High-throughput enterprise applications`,
+      `Core Java framework infrastructure`,
+    ],
+    whenToUse: [`When implementing standard ${formattedName} functionality in application logic.`],
+    whenNotToUse: [
+      `When alternative language constructs offer cleaner or higher-performance guarantees.`,
+    ],
+
+    internalWorking: `Executes directly via JVM bytecode instructions optimized by the Just-In-Time (JIT) compiler.`,
+    syntax: isStandardLib
+      ? `${formattedName} instance = new ${formattedName}();`
+      : `${formattedName} (condition) { /* logic */ }`,
+    codeExample: `// Production code example using ${formattedName}
+${formattedName} obj = new ${formattedName}();
+System.out.println("Executing " + obj);`,
+    stepByStepExecution: [
+      `1. ${formattedName} construct is compiled to bytecode.`,
+      `2. ClassLoader loads bytecode into JVM Metaspace memory.`,
+      `3. JIT compiler optimizes loop/execution hot-paths for native CPU speed.`,
+    ],
+
+    advantages: [
+      `JVM-level performance optimization`,
+      `Standardized API consistency across frameworks`,
+      `Strong static type safety`,
+    ],
+    disadvantages: [`Requires understanding JVM semantics for memory-sensitive applications`],
     bestPractices: [
-      `Follow standard Java naming conventions and concurrency safety models.`,
-      `Always reference official JavaDocs for method signatures.`,
+      `Follow standard Java code style guidelines.`,
+      `Refer to official JavaDocs for signature specifications.`,
     ],
     commonMistakes: [
-      `Using ${formattedName} outside its intended scope.`,
-      `Over-complicating logic when simpler constructs exist.`,
+      `Using ${formattedName} outside its intended design scope.`,
+      `Ignoring thread-safety implications in multi-threaded contexts.`,
     ],
+    performanceConsiderations:
+      "Optimized by JVM C2 JIT compiler for high-frequency runtime execution paths.",
+    threadSafety: isStandardLib
+      ? "Check specific class implementation details for concurrency locks."
+      : "Thread-safe within stack frame scope.",
+
+    relatedTopics: [topicTitle || "Java Core", "Collections", "OOP Principles"],
     interviewQuestions: [
       {
         question: `What is the core purpose of ${formattedName} in Java?`,
-        answer: `${formattedName} provides high-performance execution mechanics adhering to JVM specifications.`,
+        answer: `${formattedName} provides standard execution semantics adhering to JVM specifications.`,
       },
     ],
-    relatedTopics: [topicTitle || "Java Core", "Collections", "OOP Principles"],
+    useCases: [`Enterprise Java backend applications`, `Spring Boot microservices`],
+    industryExamples: ["Spring Framework Core", "Hibernate ORM", "Apache Kafka Client"],
+    summaryTakeaways: [
+      `${formattedName} is a fundamental Java component powering enterprise software.`,
+      `Provides strong type safety and high-performance JVM execution.`,
+      `Always follow production best practices when applying ${formattedName}.`,
+    ],
   };
 }

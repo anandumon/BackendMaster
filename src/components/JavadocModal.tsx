@@ -16,11 +16,26 @@ import {
   Layers,
   ChevronDown,
   ChevronUp,
+  Cpu,
+  Zap,
+  Activity,
+  ShieldCheck,
+  Clock,
+  Building2,
+  ListOrdered,
+  Maximize2,
 } from "lucide-react";
 
 const TAB_STORAGE_KEY = "javadoc_modal_active_tab";
 
-type ModalTab = "overview" | "syntax" | "best_practices" | "interview" | "javadocs";
+type ModalTab =
+  | "overview"
+  | "under_hood"
+  | "syntax_execution"
+  | "when_to_use"
+  | "best_practices"
+  | "interview"
+  | "javadocs";
 
 export function JavadocModal({
   entry,
@@ -40,7 +55,14 @@ export function JavadocModal({
   const isStandardLib = Boolean(entry?.officialDocUrl || entry?.hierarchy);
 
   const availableTabs: ModalTab[] = useMemo(() => {
-    const tabs: ModalTab[] = ["overview", "syntax", "best_practices", "interview"];
+    const tabs: ModalTab[] = [
+      "overview",
+      "under_hood",
+      "syntax_execution",
+      "when_to_use",
+      "best_practices",
+      "interview",
+    ];
     if (isStandardLib) tabs.push("javadocs");
     return tabs;
   }, [isStandardLib]);
@@ -87,7 +109,7 @@ export function JavadocModal({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-2xl max-h-[88vh] flex flex-col rounded-2xl border border-blue-200 dark:border-blue-900/80 bg-card shadow-2xl text-foreground overflow-hidden"
+        className="relative w-full max-w-3xl max-h-[90vh] flex flex-col rounded-2xl border border-blue-200 dark:border-blue-900/80 bg-card shadow-2xl text-foreground overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* FIXED HEADER (STEP 9) */}
@@ -125,7 +147,7 @@ export function JavadocModal({
           </button>
         </div>
 
-        {/* PERSISTENT TABS NAVIGATION (STEP 9) */}
+        {/* PERSISTENT TABS NAVIGATION (30-Point Schema Tabs) */}
         <div className="flex items-center gap-1 px-4 border-b border-blue-100 dark:border-blue-900/60 bg-muted/40 overflow-x-auto text-xs font-medium shrink-0">
           <button
             onClick={() => setActiveTab("overview")}
@@ -136,19 +158,43 @@ export function JavadocModal({
             }`}
           >
             <Sparkles className="h-3.5 w-3.5" />
-            Overview & Purpose
+            1. Overview & Design
           </button>
 
           <button
-            onClick={() => setActiveTab("syntax")}
+            onClick={() => setActiveTab("under_hood")}
             className={`px-3 py-2.5 border-b-2 font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 ${
-              activeTab === "syntax"
+              activeTab === "under_hood"
+                ? "border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Cpu className="h-3.5 w-3.5" />
+            2. Under the Hood
+          </button>
+
+          <button
+            onClick={() => setActiveTab("syntax_execution")}
+            className={`px-3 py-2.5 border-b-2 font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+              activeTab === "syntax_execution"
                 ? "border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             <Terminal className="h-3.5 w-3.5" />
-            Syntax & Example
+            3. Syntax & Code
+          </button>
+
+          <button
+            onClick={() => setActiveTab("when_to_use")}
+            className={`px-3 py-2.5 border-b-2 font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+              activeTab === "when_to_use"
+                ? "border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Zap className="h-3.5 w-3.5" />
+            4. Use Cases & Tradeoffs
           </button>
 
           <button
@@ -160,7 +206,7 @@ export function JavadocModal({
             }`}
           >
             <CheckCircle className="h-3.5 w-3.5" />
-            Best Practices & Errors
+            5. Best Practices
           </button>
 
           <button
@@ -172,7 +218,7 @@ export function JavadocModal({
             }`}
           >
             <HelpCircle className="h-3.5 w-3.5" />
-            Interview Q&A ({entry.interviewQuestions?.length || 0})
+            6. Interview Q&A
           </button>
 
           {isStandardLib && (
@@ -185,97 +231,229 @@ export function JavadocModal({
               }`}
             >
               <ExternalLink className="h-3.5 w-3.5" />
-              Official Oracle JavaDocs
+              7. Oracle JavaDocs
             </button>
           )}
         </div>
 
-        {/* SCROLLABLE POPUP BODY ONLY (STEP 9) */}
+        {/* SCROLLABLE POPUP BODY (STEP 9) */}
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
-          {/* TAB 1: OVERVIEW & PURPOSE */}
+          {/* TAB 1: OVERVIEW & DESIGN (Points 1-6, 30) */}
           {activeTab === "overview" && (
             <div className="space-y-4 animate-in fade-in duration-150">
-              {/* Overview */}
+              {/* 1. What is it? */}
               <div className="rounded-xl bg-blue-50/80 dark:bg-blue-950/40 p-4 border border-blue-200 dark:border-blue-800/80">
                 <h3 className="text-xs font-extrabold uppercase tracking-wider text-blue-700 dark:text-blue-300 mb-1.5 flex items-center gap-1.5">
                   <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                  Overview
+                  1. What is it?
                 </h3>
                 <p className="text-blue-950 dark:text-blue-100 leading-relaxed font-medium">
-                  {entry.overview}
+                  {entry.whatIsIt}
                 </p>
               </div>
 
-              {/* Purpose */}
+              {/* 2. Why was it introduced? */}
+              {entry.whyIntroduced && (
+                <div className="rounded-xl bg-indigo-50/80 dark:bg-indigo-950/40 p-4 border border-indigo-200 dark:border-indigo-800/80">
+                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-indigo-700 dark:text-indigo-300 mb-1.5 flex items-center gap-1.5">
+                    <Clock className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                    2. Why was it introduced?
+                  </h3>
+                  <p className="text-indigo-950 dark:text-indigo-100 leading-relaxed font-medium">
+                    {entry.whyIntroduced}
+                  </p>
+                </div>
+              )}
+
+              {/* 3. What problem does it solve? */}
               <div className="rounded-xl bg-sky-50/80 dark:bg-sky-950/40 p-4 border border-sky-200 dark:border-sky-800/80">
                 <h3 className="text-xs font-extrabold uppercase tracking-wider text-sky-700 dark:text-sky-300 mb-1.5 flex items-center gap-1.5">
                   <Layers className="h-4 w-4 text-sky-600 dark:text-sky-400" />
-                  Purpose & Why It Exists
+                  3. What problem does it solve?
                 </h3>
                 <p className="text-sky-950 dark:text-sky-100 leading-relaxed font-medium">
-                  {entry.purpose}
+                  {entry.problemSolved}
                 </p>
               </div>
 
-              {/* Use Cases */}
-              {entry.useCases && entry.useCases.length > 0 && (
+              {/* 4. What does it provide? */}
+              {entry.whatItProvides && entry.whatItProvides.length > 0 && (
                 <div className="rounded-xl bg-muted/40 p-4 border border-border">
                   <h3 className="text-xs font-extrabold uppercase tracking-wider text-foreground mb-2 flex items-center gap-1.5">
-                    <Code className="h-4 w-4 text-blue-600" />
-                    Real-World Use Cases
+                    <Zap className="h-4 w-4 text-blue-600" />
+                    4. What does it provide?
                   </h3>
                   <ul className="space-y-1.5 text-xs text-muted-foreground">
-                    {entry.useCases.map((uc, i) => (
+                    {entry.whatItProvides.map((item, i) => (
                       <li key={i} className="flex items-start gap-2">
                         <span className="text-blue-600 font-bold">•</span>
-                        <span>{uc}</span>
+                        <span>{item}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
               )}
 
-              {/* Related Topics */}
-              {entry.relatedTopics && entry.relatedTopics.length > 0 && (
-                <div>
-                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground mb-2">
-                    Related Lessons & Topics
-                  </h4>
-                  <div className="flex flex-wrap gap-1.5">
-                    {entry.relatedTopics.map((topic, i) => (
-                      <span
-                        key={i}
-                        className="px-2.5 py-1 rounded-md text-xs font-medium bg-blue-100/60 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
-                      >
-                        {topic}
-                      </span>
+              {/* 5. Why should developers use it? */}
+              <div className="rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40 p-4 border border-emerald-200 dark:border-emerald-800/80">
+                <h3 className="text-xs font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 mb-1.5 flex items-center gap-1.5">
+                  <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  5. Why should developers use it?
+                </h3>
+                <p className="text-emerald-950 dark:text-emerald-100 leading-relaxed font-medium">
+                  {entry.whyUseIt}
+                </p>
+              </div>
+
+              {/* 30. Summary (Key Takeaways) */}
+              {entry.summaryTakeaways && entry.summaryTakeaways.length > 0 && (
+                <div className="rounded-xl bg-blue-100/60 dark:bg-blue-950/60 p-4 border border-blue-300 dark:border-blue-800">
+                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-blue-900 dark:text-blue-200 mb-2 flex items-center gap-1.5">
+                    <Sparkles className="h-4 w-4 text-blue-600" />
+                    30. Summary & Key Takeaways
+                  </h3>
+                  <ul className="space-y-1.5 text-xs text-blue-950 dark:text-blue-100 font-semibold">
+                    {entry.summaryTakeaways.map((takeaway, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <span className="text-blue-600 font-bold">✓</span>
+                        <span>{takeaway}</span>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </div>
               )}
             </div>
           )}
 
-          {/* TAB 2: SYNTAX & EXAMPLE */}
-          {activeTab === "syntax" && (
+          {/* TAB 2: UNDER THE HOOD (Points 9-12, 16-17, 22-23) */}
+          {activeTab === "under_hood" && (
             <div className="space-y-4 animate-in fade-in duration-150">
-              {/* Syntax */}
+              {/* 9. Internal Working */}
+              {entry.internalWorking && (
+                <div className="rounded-xl bg-purple-50/80 dark:bg-purple-950/40 p-4 border border-purple-200 dark:border-purple-800">
+                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-purple-700 dark:text-purple-300 mb-1.5 flex items-center gap-1.5">
+                    <Cpu className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                    9. Internal Working & Execution Engine
+                  </h3>
+                  <p className="text-purple-950 dark:text-purple-100 leading-relaxed text-xs font-medium">
+                    {entry.internalWorking}
+                  </p>
+                </div>
+              )}
+
+              {/* 11 & 12. Architecture & Memory Representation */}
+              {(entry.architecture || entry.memoryRepresentation) && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {entry.architecture && (
+                    <div className="rounded-xl bg-muted/40 p-3.5 border border-border">
+                      <h4 className="text-xs font-extrabold uppercase tracking-wider text-foreground mb-1">
+                        11. Architecture
+                      </h4>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {entry.architecture}
+                      </p>
+                    </div>
+                  )}
+                  {entry.memoryRepresentation && (
+                    <div className="rounded-xl bg-muted/40 p-3.5 border border-border">
+                      <h4 className="text-xs font-extrabold uppercase tracking-wider text-foreground mb-1">
+                        12. Memory Representation
+                      </h4>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {entry.memoryRepresentation}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* 10. Lifecycle */}
+              {entry.lifecycle && (
+                <div className="rounded-xl bg-cyan-50/80 dark:bg-cyan-950/40 p-4 border border-cyan-200 dark:border-cyan-800">
+                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-cyan-700 dark:text-cyan-300 mb-1.5 flex items-center gap-1.5">
+                    <Activity className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
+                    10. Lifecycle Stages
+                  </h3>
+                  <p className="text-cyan-950 dark:text-cyan-100 leading-relaxed text-xs font-medium">
+                    {entry.lifecycle}
+                  </p>
+                </div>
+              )}
+
+              {/* 16 & 17. Time & Space Complexity */}
+              {(entry.timeComplexity || entry.spaceComplexity) && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {entry.timeComplexity && (
+                    <div className="rounded-xl bg-blue-50 dark:bg-blue-950/60 p-3.5 border border-blue-200 dark:border-blue-800">
+                      <h4 className="text-xs font-extrabold uppercase tracking-wider text-blue-700 dark:text-blue-300 mb-1">
+                        16. Time Complexity
+                      </h4>
+                      <span className="font-mono text-xs font-bold text-blue-900 dark:text-blue-100">
+                        {entry.timeComplexity}
+                      </span>
+                    </div>
+                  )}
+                  {entry.spaceComplexity && (
+                    <div className="rounded-xl bg-blue-50 dark:bg-blue-950/60 p-3.5 border border-blue-200 dark:border-blue-800">
+                      <h4 className="text-xs font-extrabold uppercase tracking-wider text-blue-700 dark:text-blue-300 mb-1">
+                        17. Space Complexity
+                      </h4>
+                      <span className="font-mono text-xs font-bold text-blue-900 dark:text-blue-100">
+                        {entry.spaceComplexity}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* 23. Thread Safety & 22. Performance Considerations */}
+              {(entry.threadSafety || entry.performanceConsiderations) && (
+                <div className="space-y-3">
+                  {entry.threadSafety && (
+                    <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/40 p-3.5 border border-emerald-200 dark:border-emerald-800">
+                      <h4 className="text-xs font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 mb-1">
+                        23. Thread Safety Guarantees
+                      </h4>
+                      <p className="text-xs text-emerald-950 dark:text-emerald-100 font-medium">
+                        {entry.threadSafety}
+                      </p>
+                    </div>
+                  )}
+                  {entry.performanceConsiderations && (
+                    <div className="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-3.5 border border-amber-200 dark:border-amber-800">
+                      <h4 className="text-xs font-extrabold uppercase tracking-wider text-amber-700 dark:text-amber-300 mb-1">
+                        22. Performance Considerations
+                      </h4>
+                      <p className="text-xs text-amber-950 dark:text-amber-100 font-medium">
+                        {entry.performanceConsiderations}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 3: SYNTAX & CODE EXECUTION (Points 13-15) */}
+          {activeTab === "syntax_execution" && (
+            <div className="space-y-4 animate-in fade-in duration-150">
+              {/* 13. Syntax */}
               <div>
                 <h3 className="text-xs font-extrabold uppercase tracking-wider text-blue-700 dark:text-blue-300 mb-1.5 flex items-center gap-1.5">
                   <Terminal className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                  Construct Syntax
+                  13. Construct Syntax
                 </h3>
                 <div className="rounded-xl bg-slate-950 p-3.5 border border-blue-900 text-xs font-mono text-blue-300 shadow-inner overflow-x-auto">
                   <code>{entry.syntax}</code>
                 </div>
               </div>
 
-              {/* ONE Practical Example */}
+              {/* 14. Code Example */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <h3 className="text-xs font-extrabold uppercase tracking-wider text-blue-700 dark:text-blue-300 flex items-center gap-1.5">
                     <Code className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                    Practical Example
+                    14. Practical Code Example
                   </h3>
                   <button
                     onClick={handleCopyCode}
@@ -303,19 +481,147 @@ export function JavadocModal({
                   </pre>
                 </div>
               </div>
+
+              {/* 15. Step-by-Step Execution */}
+              {entry.stepByStepExecution && entry.stepByStepExecution.length > 0 && (
+                <div className="rounded-xl bg-slate-900 p-4 border border-blue-900/60 text-slate-200">
+                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-blue-400 mb-2 flex items-center gap-1.5">
+                    <ListOrdered className="h-4 w-4 text-blue-400" />
+                    15. Step-by-Step Execution Trace
+                  </h3>
+                  <ol className="space-y-2 text-xs font-mono">
+                    {entry.stepByStepExecution.map((step, i) => (
+                      <li key={i} className="flex items-start gap-2 leading-relaxed">
+                        <span className="text-blue-400 font-bold">{i + 1}.</span>
+                        <span>{step}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              )}
             </div>
           )}
 
-          {/* TAB 3: BEST PRACTICES & COMMON MISTAKES */}
+          {/* TAB 4: WHEN TO USE & TRADEOFFS (Points 6, 7-8, 18-19, 28-29) */}
+          {activeTab === "when_to_use" && (
+            <div className="space-y-4 animate-in fade-in duration-150">
+              {/* 7. When to Use vs 8. When NOT to Use */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40 p-4 border border-emerald-200 dark:border-emerald-800">
+                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 mb-2 flex items-center gap-1.5">
+                    <CheckCircle className="h-4 w-4 text-emerald-600" />
+                    7. When to Use
+                  </h3>
+                  <ul className="space-y-1.5 text-xs text-emerald-950 dark:text-emerald-100 font-medium">
+                    {entry.whenToUse.map((item, i) => (
+                      <li key={i} className="flex items-start gap-1.5">
+                        <span className="text-emerald-600 font-bold">✓</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="rounded-xl bg-rose-50/80 dark:bg-rose-950/40 p-4 border border-rose-200 dark:border-rose-800">
+                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-rose-700 dark:text-rose-300 mb-2 flex items-center gap-1.5">
+                    <AlertOctagon className="h-4 w-4 text-rose-600" />
+                    8. When NOT to Use
+                  </h3>
+                  <ul className="space-y-1.5 text-xs text-rose-950 dark:text-rose-100 font-medium">
+                    {entry.whenNotToUse.map((item, i) => (
+                      <li key={i} className="flex items-start gap-1.5">
+                        <span className="text-rose-600 font-bold">✗</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* 18. Advantages & 19. Disadvantages */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="rounded-xl bg-blue-50/80 dark:bg-blue-950/40 p-4 border border-blue-200 dark:border-blue-800">
+                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-blue-700 dark:text-blue-300 mb-2">
+                    18. Key Advantages
+                  </h3>
+                  <ul className="space-y-1.5 text-xs text-blue-950 dark:text-blue-100 font-medium">
+                    {entry.advantages.map((adv, i) => (
+                      <li key={i} className="flex items-start gap-1.5">
+                        <span className="text-blue-600 font-bold">•</span>
+                        <span>{adv}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {entry.disadvantages && entry.disadvantages.length > 0 && (
+                  <div className="rounded-xl bg-amber-50/80 dark:bg-amber-950/40 p-4 border border-amber-200 dark:border-amber-800">
+                    <h3 className="text-xs font-extrabold uppercase tracking-wider text-amber-700 dark:text-amber-300 mb-2">
+                      19. Disadvantages & Tradeoffs
+                    </h3>
+                    <ul className="space-y-1.5 text-xs text-amber-950 dark:text-amber-100 font-medium">
+                      {entry.disadvantages.map((dis, i) => (
+                        <li key={i} className="flex items-start gap-1.5">
+                          <span className="text-amber-600 font-bold">•</span>
+                          <span>{dis}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              {/* 28. Real-world use cases & 29. Industry Examples (Spring, Kafka, Hibernate) */}
+              {(entry.useCases.length > 0 || entry.industryExamples) && (
+                <div className="rounded-xl bg-muted/40 p-4 border border-border">
+                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-foreground mb-2 flex items-center gap-1.5">
+                    <Building2 className="h-4 w-4 text-blue-600" />
+                    28 & 29. Real-World & Framework Integration Examples
+                  </h3>
+                  <div className="space-y-2 text-xs text-muted-foreground">
+                    <div>
+                      <span className="font-bold text-foreground block mb-1">
+                        Production Use Cases:
+                      </span>
+                      <ul className="space-y-1 pl-2">
+                        {entry.useCases.map((uc, i) => (
+                          <li key={i}>• {uc}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    {entry.industryExamples && (
+                      <div className="pt-2 border-t border-border/50">
+                        <span className="font-bold text-blue-600 dark:text-blue-400 block mb-1">
+                          Industry Examples (Spring, Kafka, Hibernate):
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {entry.industryExamples.map((ex, i) => (
+                            <span
+                              key={i}
+                              className="px-2.5 py-1 rounded-md text-xs font-medium bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-800"
+                            >
+                              {ex}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 5: BEST PRACTICES & COMMON MISTAKES (Points 20-21) */}
           {activeTab === "best_practices" && (
             <div className="space-y-4 animate-in fade-in duration-150">
-              {/* Best Practices */}
+              {/* 20. Best Practices */}
               <div className="rounded-xl bg-blue-50/80 dark:bg-blue-950/40 p-4 border border-blue-200 dark:border-blue-800">
                 <h3 className="text-xs font-extrabold uppercase tracking-wider text-blue-700 dark:text-blue-300 mb-2 flex items-center gap-1.5">
                   <Lightbulb className="h-4 w-4 text-amber-500" />
-                  Industry Best Practices
+                  20. Industry Best Practices
                 </h3>
-                <ul className="space-y-1.5 text-xs text-blue-950 dark:text-blue-100 font-medium">
+                <ul className="space-y-2 text-xs text-blue-950 dark:text-blue-100 font-medium">
                   {entry.bestPractices.map((bp, i) => (
                     <li key={i} className="flex items-start gap-2">
                       <span className="text-blue-600 font-extrabold">•</span>
@@ -325,14 +631,14 @@ export function JavadocModal({
                 </ul>
               </div>
 
-              {/* Common Mistakes */}
+              {/* 21. Common Mistakes */}
               {entry.commonMistakes && entry.commonMistakes.length > 0 && (
                 <div className="rounded-xl bg-rose-50/80 dark:bg-rose-950/40 p-4 border border-rose-200 dark:border-rose-800">
                   <h3 className="text-xs font-extrabold uppercase tracking-wider text-rose-700 dark:text-rose-300 mb-2 flex items-center gap-1.5">
                     <AlertOctagon className="h-4 w-4 text-rose-600" />
-                    Common Beginner Errors & Pitfalls
+                    21. Common Beginner Errors & Pitfalls
                   </h3>
-                  <ul className="space-y-1.5 text-xs text-rose-950 dark:text-rose-100 font-medium">
+                  <ul className="space-y-2 text-xs text-rose-950 dark:text-rose-100 font-medium">
                     {entry.commonMistakes.map((cm, i) => (
                       <li key={i} className="flex items-start gap-2">
                         <span className="text-rose-600 font-extrabold">•</span>
@@ -345,12 +651,12 @@ export function JavadocModal({
             </div>
           )}
 
-          {/* TAB 4: INTERVIEW QUESTIONS */}
+          {/* TAB 6: INTERVIEW Q&A (Point 27) */}
           {activeTab === "interview" && (
             <div className="space-y-3 animate-in fade-in duration-150">
               <h3 className="text-xs font-extrabold uppercase tracking-wider text-blue-700 dark:text-blue-300 flex items-center gap-1.5 mb-2">
                 <HelpCircle className="h-4 w-4 text-blue-600" />
-                Frequently Asked Interview Questions
+                27. Curated Technical Interview Questions
               </h3>
 
               {entry.interviewQuestions && entry.interviewQuestions.length > 0 ? (
@@ -388,30 +694,37 @@ export function JavadocModal({
                 ))
               ) : (
                 <p className="text-xs text-muted-foreground italic">
-                  No explicit interview questions indexed for this construct.
+                  No interview questions indexed for this construct.
                 </p>
               )}
             </div>
           )}
 
-          {/* TAB 5: OFFICIAL ORACLE JAVADOCS (STEP 4 & STEP 5) */}
+          {/* TAB 7: OFFICIAL ORACLE JAVADOCS (Points 24-26) */}
           {activeTab === "javadocs" && isStandardLib && (
             <div className="space-y-4 animate-in fade-in duration-150">
-              {/* Oracle Documentation Link */}
+              {/* 25. Official JavaDocs Link & Summary */}
               {entry.officialDocUrl && (
-                <div className="flex items-center justify-between p-3 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800">
-                  <span className="text-xs font-semibold text-blue-900 dark:text-blue-200">
-                    Official Oracle Java Standard Library Specification
-                  </span>
-                  <a
-                    href={entry.officialDocUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    <span>View on Oracle Docs</span>
-                    <ExternalLink className="h-3.5 w-3.5" />
-                  </a>
+                <div className="space-y-2 p-4 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-extrabold text-blue-900 dark:text-blue-200">
+                      25. Official Oracle Java Standard Library Specification
+                    </span>
+                    <a
+                      href={entry.officialDocUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      <span>View on Oracle Docs</span>
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  </div>
+                  {entry.officialDocSummary && (
+                    <p className="text-xs text-blue-950 dark:text-blue-100 italic leading-relaxed">
+                      "{entry.officialDocSummary}"
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -444,7 +757,7 @@ export function JavadocModal({
                 </div>
               )}
 
-              {/* Methods Table */}
+              {/* Standard Library Methods */}
               {entry.methods && entry.methods.length > 0 && (
                 <div>
                   <h3 className="text-xs font-extrabold uppercase tracking-wider text-blue-700 dark:text-blue-300 mb-2 flex items-center gap-1.5">
@@ -477,6 +790,25 @@ export function JavadocModal({
                         ))}
                       </tbody>
                     </table>
+                  </div>
+                </div>
+              )}
+
+              {/* 26. Related Java Concepts */}
+              {entry.relatedTopics && entry.relatedTopics.length > 0 && (
+                <div>
+                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground mb-2">
+                    26. Related Java Concepts & Lessons
+                  </h4>
+                  <div className="flex flex-wrap gap-1.5">
+                    {entry.relatedTopics.map((topic, i) => (
+                      <span
+                        key={i}
+                        className="px-2.5 py-1 rounded-md text-xs font-medium bg-blue-100/60 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
+                      >
+                        {topic}
+                      </span>
+                    ))}
                   </div>
                 </div>
               )}
