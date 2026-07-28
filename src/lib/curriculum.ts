@@ -60,8 +60,8 @@ export const DOMAINS: Domain[] = [
           t("scanner-bufferedreader", "Scanner vs BufferedReader", "Console input performance."),
           t(
             "java-keywords",
-            "Java Keywords & Javadoc Standards",
-            "Exhaustive guide to Java reserved keywords, access modifiers, and Javadoc standards (@param, @return, @throws).",
+            "Java Keywords",
+            "Exhaustive guide to Java reserved keywords, access modifiers, and scope rules.",
           ),
         ],
       },

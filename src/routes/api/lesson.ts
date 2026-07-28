@@ -19,12 +19,11 @@ CONTENT WRITING STYLE & EXHAUSTIVE COVERAGE
 • Always teach concepts from first principles (Feynman Technique). Do NOT assume prior knowledge.
 • Provide explicit decision matrices for: HOW TO USE IT, WHERE TO USE IT, WHEN TO USE IT, WHY TO USE IT.
 • Detail all related subtopics, built-in methods, functional interfaces, parameters, keys, and keywords.
-• MANDATORY JAVADOC STANDARDS: Every code snippet MUST feature complete, production-grade Javadoc comments (@param, @return, @throws, @see, @since, @author, @code, @link).
 • For every concept, provide:
   1. Explanation as if teaching a 12-year-old.
   2. Real-world analogy (Restaurant, Bank, Airport, Hospital, Post Office, Factory, etc.).
   3. Comprehensive Subtopics & Method Directory (all related functions, syntax, and keywords).
-  4. Practical software code example (Basic -> Intermediate -> Production -> Enterprise) with FULL JAVADOC DOCS.
+  4. Practical software code example (Basic -> Intermediate -> Production -> Enterprise).
   5. Enterprise project example (Amazon, Netflix, Google, Uber, Banking, Healthcare).
   6. Internal working step-by-step (Memory, CPU, JVM/Runtime behavior, hidden mechanisms).
   7. Decision Matrix: How, When, Where, Why to use.
@@ -38,7 +37,7 @@ Return STRICT JSON only (no prose outside JSON, no outer text). Every string fie
 
 JSON Schema:
 {
-  "overview": "# 1 Introduction, Definition & Subtopics Breakdown\\n\\n### Introduction\\nExplain in simple English. Why was this created? What problem does it solve? What would happen without it?\\n\\n### Definitions\\n- **Professional Definition**:\\n- **Beginner Friendly Definition**:\\n- **One-line Definition**:\\n- **Technical Definition**:\\n\\n### Subtopics & Key Mechanics Directory\\nExhaustively detail all subtopics under ${b.title}. Detail all sub-types, syntax rules, scope rules, and type inference.\\n\\n### Methods, Functions & Keywords Directory (with Javadoc Specs)\\nProvide an explicit table & list of all related built-in methods, keys, keywords (e.g. static, final, transient, volatile, synchronized, extends, implements, super, this, throws, var), operators, and parameters along with their official Javadoc specification tags (@param, @return, @throws, @see, @since).",
+  "overview": "# 1 Introduction, Definition & Subtopics Breakdown\\n\\n### Introduction\\nExplain in simple English. Why was this created? What problem does it solve? What would happen without it?\\n\\n### Definitions\\n- **Professional Definition**:\\n- **Beginner Friendly Definition**:\\n- **One-line Definition**:\\n- **Technical Definition**:\\n\\n### Subtopics & Key Mechanics Directory\\nExhaustively detail all subtopics under ${b.title}. Detail all sub-types, syntax rules, scope rules, and type inference.\\n\\n### Methods, Functions & Keywords Directory\\nProvide an explicit table & list of all related built-in methods, keys, keywords (e.g. static, final, transient, volatile, synchronized, extends, implements, super, this, throws, var), operators, and parameters.",
 
   "whyExists": "# 3 Why do we need it?\\n\\nDetailed breakdown of:\\n- Historical Background & Industry Motivation\\n- Business Motivation & Developer Motivation\\n- Concrete Problems, Limitations & Pain Points solved",
 
@@ -52,19 +51,19 @@ JSON Schema:
 
   "disadvantages": "# 11 Disadvantages\\n\\nDetailed breakdown of limitations, trade-offs, overheads, and scenarios where it should NOT be used.",
 
-  "bestPractices": "# 12 Best Practices, Javadoc Documentation & Production Standards\\n\\nIndustry standards, coding guidelines, enterprise recommendations, security rules, performance optimizations.\\n\\n### Professional Javadoc Documentation Guide\\nExplain how to write clean, standard Javadoc documentation for methods, classes, and fields using tags like @param, @return, @throws, @see, @since, @code, and @deprecated.",
+  "bestPractices": "# 12 Best Practices & Production Standards\\n\\nIndustry standards, coding guidelines, enterprise recommendations, security rules, performance optimizations.",
 
   "commonMistakes": "# 13 Common Mistakes & Fixes\\n\\nShow mistakes beginners, intermediate, and senior engineers make. Explain WHY they fail and HOW to fix them.",
 
   "interviewQuestions": "# 15 & 16 Interview Masterclass\\n\\n### Frequently Asked Interview Questions (20 Questions)\\nFor each question, provide: Beginner Answer, Professional Answer, Senior Engineer Answer, and Interviewer Tips.\\n\\n### Scenario-Based Questions (15 Real Scenarios)\\nExplain Situation, Problem, Solution, and Reasoning.",
 
-  "cheatsheet": "# 17 & 19 Coding Masterclass, Subtopic Code Progression with Javadoc & Formula Sheet\\n\\nProvide practical code progression covering all subtopics, keywords, and methods. EVERY snippet MUST include production-grade Javadoc comments:\\n1. Basic Code Example (with Javadoc)\\n2. Intermediate Code Example (with Javadoc)\\n3. Production Code Example (with Javadoc)\\n4. Enterprise Microservice Example (with Javadoc)\\n\\nInclude line-by-line explanations for every code snippet, quick formula sheet, memory tricks, key shortcuts.",
+  "cheatsheet": "# 17 & 19 Coding Masterclass, Subtopic Code Progression & Formula Sheet\\n\\nProvide practical code progression covering all subtopics, keywords, and methods:\\n1. Basic Code Example\\n2. Intermediate Code Example\\n3. Production Code Example\\n4. Enterprise Microservice Example\\n\\nInclude line-by-line explanations for every code snippet, quick formula sheet, memory tricks, key shortcuts.",
 
   "practicalUsage": "# 14 Performance & Scalability Considerations\\n\\nMemory, CPU, thread safety, caching, optimization, and high-throughput production scaling.",
 
   "prerequisites": "Prerequisites list in markdown bullet points.",
 
-  "revisionNotes": "# 19 & 20 One-Page Revision & Complete Summary\\n\\nOne-page quick summary covering key takeaways, production tips, common pitfalls, subtopics summary, Javadoc quick reference, and core formulas.",
+  "revisionNotes": "# 19 & 20 One-Page Revision & Complete Summary\\n\\nOne-page quick summary covering key takeaways, production tips, common pitfalls, subtopics summary, and core formulas.",
 
   "mcqs": [
     {
